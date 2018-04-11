@@ -6,7 +6,10 @@
 
 
 /**
- * Main bash engine class - implements main program loop, which
+ * @class Engine
+ * @brief Main bash engine class.
+ *
+ * Implements main program loop, which
  * fetches commands from the interpreter and executes commands.
  *
  * It implements both interactive and non-interactive mode. In

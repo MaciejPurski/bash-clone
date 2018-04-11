@@ -7,7 +7,9 @@
 typedef std::vector<Command*> CommandLine;
 
 /**
- * Interpreter parses input and returns commandlines.
+ * @class Interpreter
+ * @brief Parses input and returns commandlines.
+ *
  * By default it works on stdin, but it might work on file
  * input as well.
  */
