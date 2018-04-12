@@ -9,7 +9,10 @@
  *	especially environmental variables.
  */
 class Environment {
-public:
+
+	char **table;
+
+	public:
 	/**
 	 * @brief Sets the variable to the given value. If it doesn't exist,
 	 * 		  it shall be created
