@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "Command.h"
+#include "Environment.h"
 
 typedef std::vector<Command*> CommandLine;
 
@@ -15,13 +16,12 @@ typedef std::vector<Command*> CommandLine;
  */
 class Interpreter {
 private:
-	std::string fileName;
+	Environment &env;
 
 public:
-	Interpreter();
+	Interpreter(Environment &nenv) : env(nenv) { };
 
-	void openFile(const std::string &fName);
-	CommandLine nextCommandLine();
+	CommandLine nextCommandLine(std::string &line);
 
 };
 

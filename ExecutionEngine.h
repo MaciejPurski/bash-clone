@@ -17,18 +17,16 @@
  * In non-interactive mode it executes all commands until the EOF is reached
  * and finishes execution.
  */
-class Engine {
+class ExecutionEngine {
 private:
-	bool isInteractiveMode;
-	Interpreter &interpreter;
 	Environment &environment;
 
 	bool isBuiltIn();
 	int execCommand(ExecutableCommand *command);
 
 public:
-	Engine(Interpreter &i, Environment &e, bool interactiveMode);
-	void run();
+	ExecutionEngine(Environment &e);
+	void executeCommandLine(CommandLine &line);
 
 };
 

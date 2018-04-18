@@ -77,6 +77,8 @@ class Environment {
 
 	void setMask();
 
+	Environment() {}
+
 };
 
 
