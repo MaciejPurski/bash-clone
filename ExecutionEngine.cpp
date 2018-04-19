@@ -2,10 +2,6 @@
 
 ExecutionEngine::ExecutionEngine(Environment &e) : environment(e) {
 
-	/*  TODO: Signal handling. Bash should pass the signals to
-	 * its child processes
-	 *
-	 */
 
 }
 
@@ -19,5 +15,9 @@ int ExecutionEngine::execCommand(ExecutableCommand *command) {
 }
 
 void ExecutionEngine::executeCommandLine(CommandLine &line) {
+
+}
+
+void ExecutionEngine::sendSignal(int signal) {
 
 }

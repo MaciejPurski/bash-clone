@@ -27,6 +27,7 @@ private:
 public:
 	ExecutionEngine(Environment &e);
 	void executeCommandLine(CommandLine &line);
+	void sendSignal(int signal);
 
 };
 

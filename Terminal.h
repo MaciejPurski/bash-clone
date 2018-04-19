@@ -13,6 +13,7 @@ private:
 	Interpreter interpreter;
 	ExecutionEngine engine;
 	std::ifstream initFile, scriptFile;
+	int pid;
 	void run(std::istream &input, bool interactiveMode);
 	bool interactive;
 
@@ -20,7 +21,7 @@ public:
 	Terminal(const std::string &initFilename, const std::string &scriptFilename) : interpreter(env), engine(env) {
 		initFile.open(initFilename);
 
-		if (scriptFilename != "") {
+		if (!scriptFilename.empty()) {
 			scriptFile.open(scriptFilename);
 			interactive = false;
 		} else {
@@ -30,6 +31,13 @@ public:
 
 	void start();
 
+	void sigint();
+	void sigstp();
+	void sigquit();
+
+	void installSignals();
+
+	void prompt();
 };
 
 

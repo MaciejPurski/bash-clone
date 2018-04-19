@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
 		std::cout << "Wrong arguments Usage: bash-clone <init_script_name> [optional] -c <script_name>\n";
 	}
 
-
 	Terminal t(initName, scriptName);
 
 	t.start();
