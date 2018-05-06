@@ -2,6 +2,19 @@
 #define BASH_CLONE_ENVIRONMENT_H
 #include "Command.h"
 
+#include <iostream>
+#include <unordered_map>
+#include <fstream>
+
+#include <unistd.h>
+#include <stdio.h>
+#include <cstring>
+#include <sys/types.h>
+#include <pwd.h>
+
+#include <vector>
+#include <memory>
+
 /**
  *	@class Environment
  *
@@ -10,9 +23,65 @@
  */
 class Environment {
 
-	char **table;
+	enum TypeOfVariable{
+		localVariable,
+		globalVariable
+	};
+
+	struct EnvironmentVariable
+	{
+		std::string name_;
+		std::string value_;
+
+		EnvironmentVariable(const std::string name, const std::string value="")
+				:name_(name), value_(value)
+		{};
+
+		std::string getName() const
+		{
+			return name_;
+		}
+
+		std::string getValue() const
+		{
+			return value_;
+		}
+
+		void setValue(const std::string newValue) {
+			value_=newValue;
+		}
+	};
+
+	std::string currentDir_;
+	std::vector<std::unique_ptr<EnvironmentVariable>> localVariables_;
+	std::vector<std::unique_ptr<EnvironmentVariable>> globalVariables_;
+
+	private:
+	void loadUserVariable();
+	void loadHomeVariable();
+	void loadPathVariable();
+
+	bool variableExists(const std::string &name) const;
+	bool isGlobalVariable(const std::string &name) const;
+	bool isLocalVariable(const std::string &name) const;
 
 	public:
+
+	/**
+	 * @brief Constructor reads ~/.profile and /etc/enviroment to get PATH variables and it use
+	 * getpwuid to ged HOME and USER
+	 */
+
+
+	Environment();
+
+	/**
+	 * @brief Destructor delete tables
+	 */
+
+	~Environment();
+
+
 	/**
 	 * @brief Sets the variable to the given value. If it doesn't exist,
 	 * 		  it shall be created
