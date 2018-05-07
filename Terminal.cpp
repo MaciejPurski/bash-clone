@@ -32,7 +32,7 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 		}
 
 		// if a continuation is needed
-		while (line.back() == '\\' || line.back() = '|'
+		while (line.back() == '\\' || line.back() == '|'
 		       || ((std::count(line.begin(), line.end(), '\'') % 2) != 0)) {
 			std::string continuation;
 
