@@ -20,9 +20,9 @@ private:
 	Environment &env;
 	ExecutionEngine &engine;
 
-	enum TokenType {QUOTATION, PIPE, AMPERSAND, SEMICOLON, END, STREAM, SPACE, ASSIGNMENT, WITH$, WORD};
+    enum TokenType {QUOTATION, PIPE, AMPERSAND, SEMICOLON, END, STREAM, SPACE, ASSIGNMENT, WITH$, WORD};
 
-	struct Token{
+    struct Token{
 		Token(TokenType type, const std::string &value);
 
 		TokenType type;
@@ -32,10 +32,11 @@ private:
 	std::vector<Token> separateTokens(std::string &line);
 	std::vector<std::vector<Token>> separateInstruction(std::vector<Token> &tokens);
 	void interpretInstruction(std::vector<Token> &instruction);
-
+    bool is(char sign, const std::initializer_list<char> &acceptable) const;
 
 public:
-	Interpreter(Environment &nenv, ExecutionEngine &engine) : env(nenv), engine(engine) { };
+
+    Interpreter(Environment &nenv, ExecutionEngine &engine) : env(nenv), engine(engine) { };
 
 	void nextCommandLine(std::string &line);
 
