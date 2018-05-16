@@ -33,6 +33,7 @@ private:
 	std::vector<std::vector<Token>> separateInstruction(std::vector<Token> &tokens);
 	void interpretInstruction(std::vector<Token> &instruction);
     bool is(char sign, const std::initializer_list<char> &acceptable) const;
+    bool is(TokenType type, const std::initializer_list<TokenType> &acceptable) const;
 
 public:
 

@@ -92,7 +92,30 @@ std::vector<Interpreter::Token> Interpreter::separateTokens(std::string &line) {
 }
 
 std::vector<std::vector<Interpreter::Token>> Interpreter::separateInstruction(std::vector<Interpreter::Token> &tokens) {
-    return std::vector<std::vector<Interpreter::Token>>();
+    std::vector<std::vector<Interpreter::Token>> instructions;
+    int it=0;
+    while (it<tokens.size()){
+        std::vector<Interpreter::Token> instruction;
+        if(tokens[it].type == SEMICOLON || tokens[it].type == PIPE || tokens[it].type == AMPERSAND){
+            throw("Nieoczekiwany znacznik:" + tokens[it].value);
+        }
+        while(tokens[it].type != SEMICOLON && tokens[it].type != PIPE && tokens[it].type != AMPERSAND && tokens[it].type != END){
+            if(tokens[it].type == STREAM){
+                instruction.push_back(tokens[it]);
+                it++;
+                if(tokens[it].type == SPACE)
+                    it++;
+                if(!is(tokens[it].type, {WORD, QUOTATION, SPACE, ASSIGNMENT, WITH$})){
+                    throw("Nieoczekiwany znacznik:" + tokens[it].value);
+                }
+            }
+            instruction.push_back(tokens[it]);
+            it++;
+        }
+
+        instructions.push_back(instruction);
+    }
+    return instructions;
 }
 
 void Interpreter::interpretInstruction(std::vector<Interpreter::Token> &instruction) {
@@ -104,6 +127,15 @@ Interpreter::Token::Token(Interpreter::TokenType type, const std::string &value)
 bool Interpreter::is(char sign, const std::initializer_list<char> &acceptable) const {
     for (auto &it: acceptable) {
         if (it == sign) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Interpreter::is(TokenType type, const std::initializer_list<TokenType> &acceptable) const {
+    for (auto &it: acceptable) {
+        if (it == type) {
             return true;
         }
     }
