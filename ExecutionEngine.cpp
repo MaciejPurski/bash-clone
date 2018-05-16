@@ -10,13 +10,10 @@ bool ExecutionEngine::isBuiltIn() {
 	return false;
 }
 
-int ExecutionEngine::execCommand(ExecutableCommand *command) {
+int ExecutionEngine::execCommand(Command *command) {
 	return 0;
 }
 
-void ExecutionEngine::executeCommandLine(CommandLine &line) {
-
-}
 
 void ExecutionEngine::sendSignal(int signal) {
 

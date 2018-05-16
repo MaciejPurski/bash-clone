@@ -49,9 +49,9 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 			continue;
 
 		try {
-			CommandLine c = interpreter.nextCommandLine(line);
 
-			engine.executeCommandLine(c);
+			interpreter.nextCommandLine(line);
+
 		} catch (std::exception &e) {
 			// TODO exception handling
 			e.what();

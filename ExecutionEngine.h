@@ -1,9 +1,8 @@
 #ifndef BASH_CLONE_ENGINE_H
 #define BASH_CLONE_ENGINE_H
 
-#include "Interpreter.h"
 #include "Environment.h"
-
+#include "Command.h"
 
 /**
  * @class Engine
@@ -22,11 +21,10 @@ private:
 	Environment &environment;
 
 	bool isBuiltIn();
-	int execCommand(ExecutableCommand *command);
+	int execCommand(Command *command);
 
 public:
 	ExecutionEngine(Environment &e);
-	void executeCommandLine(CommandLine &line);
 	void sendSignal(int signal);
 
 };

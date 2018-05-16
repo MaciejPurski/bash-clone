@@ -18,7 +18,7 @@ private:
 	bool interactive;
 
 public:
-	Terminal(const std::string &initFilename, const std::string &scriptFilename) : interpreter(env), engine(env) {
+	Terminal(const std::string &initFilename, const std::string &scriptFilename) : engine(env), interpreter(env, engine) {
 		initFile.open(initFilename);
 
 		if (!scriptFilename.empty()) {
