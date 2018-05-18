@@ -21,12 +21,12 @@ std::vector<Interpreter::Token> Interpreter::separateTokens(std::string &line) {
     std::vector<Token> tokens;
     int it = 0;
     while (it < line.size()) {
-        int tmp = it;
-        while (isspace(line[it])) {
-            it++;
-        }
-        if (tmp != it) {
+        if(isspace(line[it])){
             tokens.emplace_back(SPACE, " ");
+            it++;
+            while (isspace(line[it])) {
+                it++;
+            }
         }
 
         if (line[it] == '\'') {
@@ -60,35 +60,29 @@ std::vector<Interpreter::Token> Interpreter::separateTokens(std::string &line) {
         } else {
             std::string bufor;
             while (line[it] > '0' && line[it] < '9') {
-                bufor.push_back(line[it]);
-                it++;
+                bufor.push_back(line[it++]);
             }
             if (!bufor.empty() && line[it] == '>') {
-                bufor.push_back(line[it]);
-                it++;
+                bufor.push_back(line[it++]);
                 if (line[it] == '>') {
-                    bufor.push_back(line[it]);
-                    it++;
+                    bufor.push_back(line[it++]);
                 }
                 tokens.emplace_back(STREAM, bufor);
             } else if (!bufor.empty() && line[it] == '<') {
-                bufor.push_back(line[it]);
-                it++;
+                bufor.push_back(line[it++]);
                 tokens.emplace_back(STREAM, bufor);
             } else if (bufor.empty() && line[it] == '$') {
                 it++;
                 while (!is(line[it], {'|', '&', ';', '\'', '$', '<', '>', '='}) && !isspace(line[it]) &&
                        it < line.size()) {
-                    bufor.push_back(line[it]);
-                    it++;
+                    bufor.push_back(line[it++]);
                 }
                 tokens.emplace_back(WITH$, bufor);
             } else {
                 while (!is(line[it], {'|', '&', ';', '\'', '$', '<', '>'}) && !isspace(line[it]) && it < line.size()) {
                     if (line[it] == '=')
                         break;
-                    bufor.push_back(line[it]);
-                    it++;
+                    bufor.push_back(line[it++]);
                 }
                 if (line[it] == '=') {
                     tokens.emplace_back(ASSIGNMENT, bufor);
@@ -112,25 +106,22 @@ std::vector<std::vector<Interpreter::Token>> Interpreter::separateInstruction(st
         std::vector<Interpreter::Token> instruction;
         if(tokens[it].type == SPACE)
             it++;
-        if(tokens[it].type == SEMICOLON || tokens[it].type == PIPE || tokens[it].type == AMPERSAND){
+        if(is(tokens[it].type, {SEMICOLON, PIPE, AMPERSAND})){
             throw(parserException(tokens[it].value));
         }
-        while(tokens[it].type != SEMICOLON && tokens[it].type != PIPE && tokens[it].type != AMPERSAND && tokens[it].type != END){
+        while(!is(tokens[it].type, {SEMICOLON, PIPE, AMPERSAND, END})){
             if(tokens[it].type == STREAM){
-                instruction.push_back(tokens[it]);
-                it++;
+                instruction.push_back(tokens[it++]);
                 if(tokens[it].type == SPACE)
                     it++;
                 if(!is(tokens[it].type, {WORD, QUOTATION, SPACE, ASSIGNMENT, WITH$})){
                     throw(parserException(tokens[it].value));
                 }
             }
-            instruction.push_back(tokens[it]);
-            it++;
+            instruction.push_back(tokens[it++]);
         }
 
-        instruction.push_back(tokens[it]);
-        it++;
+        instruction.push_back(tokens[it++]);
         instructions.push_back(instruction);
     }
     return instructions;
@@ -157,7 +148,7 @@ void Interpreter::interpretInstruction(std::vector<Interpreter::Token> &instruct
                     number = 1;
                 else
                     number = 0;
-            };;
+            }
             it++;
             command.redirections.emplace_back(number, sign == "<", sign == ">>", concatenation(instruction, it));
         }
