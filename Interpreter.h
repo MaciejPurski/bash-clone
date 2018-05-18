@@ -6,8 +6,6 @@
 #include "Environment.h"
 #include "ExecutionEngine.h"
 
-typedef std::vector<Command*> CommandLine;
-
 /**
  * @class Interpreter
  * @brief Parses input.
@@ -34,8 +32,24 @@ private:
 	void interpretInstruction(std::vector<Token> &instruction);
     bool is(char sign, const std::initializer_list<char> &acceptable) const;
     bool is(TokenType type, const std::initializer_list<TokenType> &acceptable) const;
+    std::string concatenation(std::vector<Token> &instruction, int &it);
 
 public:
+
+	class parserException: public std::exception {
+	public:
+		parserException(const std::string &value)  {
+			this->value = "Nieoczekiwany znacznik: '" + value + "\'";
+		}
+
+		const char* what() const throw() final
+		{
+			return value.c_str();
+		}
+
+	private:
+		std::string value;
+	};
 
     Interpreter(Environment &nenv, ExecutionEngine &engine) : env(nenv), engine(engine) { };
 

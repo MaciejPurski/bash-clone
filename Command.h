@@ -10,6 +10,10 @@
 class Command {
 public:
 	struct Redirection {
+		Redirection(int index, bool input, bool endOfFile, const std::string &fileName) : index(index), input(input),
+																						  endOfFile(endOfFile),
+																						  fileName(fileName) {}
+
 		int index;
 		bool input;
 		bool endOfFile;
