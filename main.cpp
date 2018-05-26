@@ -2,8 +2,11 @@
 #include "ExecutionEngine.h"
 #include "Terminal.h"
 
+#include <iostream>
+
 int main(int argc, char *argv[])
 {
+
 	std::string initName;
 	std::string scriptName;
 
@@ -27,7 +30,6 @@ int main(int argc, char *argv[])
 	}
 
 	Terminal t(initName, scriptName);
-
 	t.start();
 
 	return 0;
