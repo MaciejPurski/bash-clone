@@ -215,7 +215,7 @@ void Environment::setVariable(const std::string &name, const std::string &value)
 
 	else
 	{
-		variablesMap_.insert(std::make_pair(value, std::unique_ptr<EnvironmentVariable>(new EnvironmentVariable(name, value, localVariable))));
+		variablesMap_.insert(std::make_pair(name, std::unique_ptr<EnvironmentVariable>(new EnvironmentVariable(name, value, localVariable))));
 	}
 }
 
