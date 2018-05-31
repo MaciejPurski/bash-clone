@@ -55,12 +55,20 @@ BOOST_AUTO_TEST_CASE(HomeVariable)
 	BOOST_CHECK_EQUAL(tmp.c_str(), homeDir);
 }
 
-BOOST_AUTO_TEST_CASE(VimCheck)
+BOOST_AUTO_TEST_CASE(SleepCheck)
 {
 	Environment env;
-	std::string vimPath = env.getValue("HOME") + "/bin/vim";
+	std::string sleepPath = "/bin/sleep";
 
-	BOOST_CHECK_EQUAL(vimPath, env.searchPath("vim"));
+	BOOST_CHECK_EQUAL(sleepPath, env.searchPath("sleep"));
+}
+
+BOOST_AUTO_TEST_CASE(IfSearchPathCannotFindSomethingThatNotExists)
+{
+	Environment env;
+	std::string programName = "This is the program with long name. It can't exist. We are on a mission from God!";
+	std::string tmp = env.searchPath(programName);
+	BOOST_CHECK(tmp.empty());
 }
 
 BOOST_AUTO_TEST_CASE(LastElementNull)
