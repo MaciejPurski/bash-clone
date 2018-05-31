@@ -1,20 +1,13 @@
 #include "Interpreter.h"
 
-void Interpreter::nextCommandLine(std::string &line) {
+std::vector<Command> Interpreter::nextCommandLine(std::string &line) {
     std::vector<Token> tokens = separateTokens(line);
-    try{
     std::vector<std::vector<Token>> instructions = separateInstruction(tokens);
+    std::vector<Command> commands;
     for(auto &it:instructions){
-        std::cout<<"Kolejna instrukcja:"<<std::endl;
-        for(auto &it2: it){
-            std::cout<<it2.type<<"  "<<it2.value<<std::endl;
-        }
-        interpretInstruction(it);
-
-    }}
-    catch (parserException &exc){
-        std::cerr<<exc.what()<<std::endl;
+        commands.push_back(createCommand(it));
     }
+    return commands;
 }
 
 std::vector<Interpreter::Token> Interpreter::separateTokens(std::string &line) {
@@ -127,7 +120,7 @@ std::vector<std::vector<Interpreter::Token>> Interpreter::separateInstruction(st
     return instructions;
 }
 
-void Interpreter::interpretInstruction(std::vector<Interpreter::Token> &instruction) {
+Command::Command Interpreter::createCommand(std::vector<Interpreter::Token> &instruction) {
     Command command;
     int it=0;
     while(!is(instruction[it].type, {PIPE, AMPERSAND, SEMICOLON, END})){
@@ -154,7 +147,8 @@ void Interpreter::interpretInstruction(std::vector<Interpreter::Token> &instruct
         }
         else if(command.command.empty()){
             if (instruction[it].type == ASSIGNMENT){
-                env.setVariable(instruction[it++].value, concatenation(instruction, it));
+                std::string tmp =instruction[it++].value;
+                env.setVariable(tmp, concatenation(instruction, it));
             } else
                 command.command = concatenation(instruction, it);
         } else if(command.command == "export"){
@@ -175,14 +169,7 @@ void Interpreter::interpretInstruction(std::vector<Interpreter::Token> &instruct
     else if(instruction[it].type == AMPERSAND){
         command.term = Command::AMPER;
     }
-
-    std::cout<<command.command<<std::endl;
-    for(auto &it2: command.args){
-        std::cout<<it2<<", ";
-    }
-    for(auto &it2: command.redirections){
-        std::cout<<it2.index<<", "<<it2.input<<", "<<it2.endOfFile<<", "<<it2.fileName<<std::endl;
-    }
+    return command;
 
 }
 

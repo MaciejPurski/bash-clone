@@ -19,12 +19,12 @@
 class ExecutionEngine {
 private:
 	Environment &environment;
-
-	bool isBuiltIn();
-	int execCommand(Command *command);
+    bool isBuiltIn();
+    int execCommand(Command *command);
 
 public:
-	ExecutionEngine(Environment &e);
+    ExecutionEngine(Environment &e);
+    void executeCommandLine(std::vector<Command> commands);
 	void sendSignal(int signal);
 
 };
