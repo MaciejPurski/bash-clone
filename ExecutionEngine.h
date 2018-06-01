@@ -19,8 +19,8 @@
 class ExecutionEngine {
 private:
 	Environment &environment;
-    bool isBuiltIn();
-    int execCommand(Command *command);
+    bool executeBuiltIn(Command &command);
+    int execCommand(Command &command);
 
 public:
     ExecutionEngine(Environment &e);

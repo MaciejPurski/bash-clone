@@ -49,8 +49,8 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 			continue;
 
 		try {
-
-			engine.executeCommandLine(interpreter.processCommandLine(line));
+			std::vector<Command> commands = interpreter.processCommandLine(line);
+			engine.executeCommandLine(std::move(commands));
 
 		} catch (std::exception &e) {
 			// TODO exception handling
@@ -61,7 +61,7 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 
 
 void Terminal::prompt() {
-	std::cout << env.getValue("USER") << ":" << env.getCurrentDir() << "$ ";
+	std::cout << strToGreen(env.getValue("USER")) << ":" << strToBlue(env.getCurrentDir()) << "$ ";
 }
 
 
