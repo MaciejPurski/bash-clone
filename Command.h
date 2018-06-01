@@ -5,52 +5,18 @@
 #include <vector>
 
 /**
- * Abstract class representing a command. Only its
- * derived classes can be instantiated.
+ * Class representing a command.
  */
 class Command {
 public:
-	virtual ~Command() {};
-
-	/**
-	 * used to determine class type without
-	 * using ineffective RTTI mechanisms.
-	 */
-	enum CommandType {EXECUTABLE, ASSIGN};
-
-	CommandType getType() {
-		return type;
-	};
-
-protected:
-	Command() {};
-	CommandType type;
-};
-
-class AssignCommand : public Command {
-public:
-	std::string name;
-	std::string value;
-
-	AssignCommand() {
-		Command::type = ASSIGN;
-		name = "";
-		value = "";
-	}
-
-	AssignCommand(const std::string &nName, const std::string &nValue) :
-			name(nName), value(nValue) {
-		Command::type = ASSIGN;
-	}
-};
-
-
-
-class ExecutableCommand : public Command {
-public:
 	struct Redirection {
+		Redirection(int index, bool input, bool endOfFile, const std::string &fileName) : index(index), input(input),
+																						  endOfFile(endOfFile),
+																						  fileName(fileName) {}
+
 		int index;
 		bool input;
+		bool endOfFile;
 		std::string fileName;
 	};
 
@@ -61,11 +27,13 @@ public:
 	std::vector<Redirection> redirections;
 	CommandTermination term;
 
-	ExecutableCommand() {
-		Command::type = EXECUTABLE;
+	Command() {
 		command = "";
 		term = TERM;
 	}
+
 };
+
+
 
 #endif
