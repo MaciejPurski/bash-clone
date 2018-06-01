@@ -61,7 +61,7 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 
 
 void Terminal::prompt() {
-	std::cout << env.getValue("USER") << ":" << env.getValue("PWD") << "$ ";
+	std::cout << env.getValue("USER") << ":" << env.getCurrentDir() << "$ ";
 }
 
 

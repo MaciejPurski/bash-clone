@@ -236,7 +236,7 @@ class Environment {
 
 	void setCurrentDir(const std::string &path);
 
-	std::string getCurrentDir(const std::string &path);
+	std::string getCurrentDir();
 
 	int getMask();
 

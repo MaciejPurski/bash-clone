@@ -316,7 +316,7 @@ void Environment::setCurrentDir(const std::string &path) {
 	currentDir_ = path;
 }
 
-std::string Environment::getCurrentDir(const std::string &path) {
+std::string Environment::getCurrentDir() {
 	return currentDir_;
 }
 
