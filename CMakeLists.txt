@@ -7,13 +7,13 @@ find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 include_directories(${Boost_INCLUDE_DIR})
 
 add_executable(environmentTest
-        tests/environment-tests.cpp Environment.h Environment.cpp)
+        tests/environment-tests.cpp Environment.h Environment.cpp BashExceptions.h)
 
 add_executable(engineTest
-        tests/engine-tests.cpp ExecutionEngine.h ExecutionEngine.cpp Interpreter.h Interpreter.cpp)
+        tests/engine-tests.cpp ExecutionEngine.h ExecutionEngine.cpp Interpreter.h Interpreter.cpp BashExceptions.h)
 
 add_executable(interpreterTest
-        tests/interpreter-tests.cpp Interpreter.h Interpreter.cpp)
+        tests/interpreter-tests.cpp Interpreter.h Interpreter.cpp BashExceptions.h)
 
 add_executable(bash_clone
-        main.cpp ExecutionEngine.cpp ExecutionEngine.h Interpreter.cpp Interpreter.h Command.h Environment.cpp Environment.h Terminal.cpp Terminal.h)
+        main.cpp ExecutionEngine.cpp ExecutionEngine.h Interpreter.cpp Interpreter.h Command.h Environment.cpp Environment.h Terminal.cpp Terminal.h BashExceptions.h)

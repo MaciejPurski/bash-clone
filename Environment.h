@@ -17,6 +17,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "BashExceptions.h"
+
 /**
  *	@class Environment
  *
@@ -156,6 +158,15 @@ class Environment {
 
 	std::string getParentDir(const std::string dirName) const;
 
+	/**
+	 * @brief Function use by expand path. It give first 'piece' of path - which mean
+	 * string beetwen '/' and '/' or '/' and end of file
+	 * @param path path to get piece
+	 * @return piece of path
+	 */
+
+	std::string getPathPiece(std::string path);
+
 	public:
 
 	/**
@@ -239,15 +250,27 @@ class Environment {
 		return this->variablesMap_;
 	};
 
+	/**
+	 * @brief Change current dir to given argument.
+	 * @param path new current dir path
+	 */
+
 	void setCurrentDir(const std::string &path);
+
+	/**
+	 * @brief Returns current path.
+	 * @return current path
+	 */
 
 	std::string getCurrentDir();
 
+	/**
+	 * @brief Checks if dir with given exists. It simply use closedir function.
+	 * @param path absolute path to directory
+	 * @return true if exists, false if not exists
+	 */
+
 	bool checkIfDirExists(std::string path);
-
-	int getMask();
-
-	void setMask();
 };
 
 

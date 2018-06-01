@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+
 const char *Environment::getUserName() {
 	uid_t uid = geteuid();              // get effective user ID
 	struct passwd *pw = getpwuid(uid);  // get pointer to pw struct
@@ -126,6 +127,27 @@ std::vector<std::string> Environment::getPathPieces() const {
 	return pathPieces;
 }
 
+bool Environment::searchInDir(const std::string dirName, const std::string name) {
+	DIR *dir = opendir(dirName.c_str());
+
+	if(dir == NULL)
+	{
+		return false;
+	}
+
+	struct dirent * sd;
+	while((sd = readdir(dir)) != NULL){
+
+		if(strcmp(sd->d_name, name.c_str()) == 0)
+		{
+			return true;
+		}
+	}
+	closedir(dir);
+
+	return false;
+}
+
 bool Environment::checkIfEnvVariableNameIsValid(const std::string name) const {
 	if (name.empty())
 		return false;
@@ -148,27 +170,6 @@ bool Environment::checkIfEnvVariableNameIsValid(const std::string name) const {
 	return true;
 }
 
-bool Environment::searchInDir(const std::string dirName, const std::string name) {
-	DIR *dir = opendir(dirName.c_str());
-
-	if(dir == NULL)
-	{
-		return false;
-	}
-
-	struct dirent * sd;
-	while((sd = readdir(dir)) != NULL){
-
-		if(strcmp(sd->d_name, name.c_str()) == 0)
-		{
-			return true;
-		}
-	}
-	closedir(dir);
-
-	return false;
-}
-
 std::string Environment::getParentDir(const std::string dirName) const {
 	if (dirName == "/") // dir / don't have parent...
 		return dirName;
@@ -186,6 +187,26 @@ std::string Environment::getParentDir(const std::string dirName) const {
 	}
 
 	return dirName.substr(0, index);
+}
+
+std::string Environment::getPathPiece(std::string path)
+{
+	int index = 1;
+
+	if(path.length() <= 1)
+		return "";
+
+	std::string tmp;
+
+	while(index<path.length())
+	{
+		if(path[index] == '/')
+			return tmp;
+		tmp = tmp + path[index];
+		++index;
+	}
+
+	return tmp;
 }
 
 Environment::Environment() {
@@ -238,69 +259,85 @@ char **Environment::getEnvironment() {
 		strcpy(tmp[i], tmpStr.c_str());
 		++i;
 	}
-	tmp[i] = new char[1];
-	tmp[i][0] = '\0';
+	tmp[i] = NULL;
 
 	return tmp;
 }
 
+std::string cutPath(std::string name){
+	int index = 0;
+	if(name.length()<=1)
+		return "";
+
+	for(index = 1; index<name.length(); ++index)
+	{
+		if(name[index] == '/')
+			break;
+	}
+
+	if(index == name.length())
+		return "";
+	else
+		return name.substr(index, name.length());
+}
+
 std::string Environment::expandPath(const std::string &name) {
-	std::string toReturn = name;
-	std::string tmp;
-	int pos;
-
-	if (name == ".") {
-		return currentDir_;
+	if(name.empty())
+	{
+		throw EmptyPath("Throw when try to use function expandPath");
 	}
 
-	if (name == "..") {
-		return getParentDir(currentDir_);
+	std::string tmp = name;
+	std::string toReturn = "/";
+
+	if(tmp[0] == '~')
+	{
+		tmp = getValue("HOME")+"/"+tmp.substr(1, tmp.length());
+	}
+	else if(tmp[0] == '.')
+	{
+		tmp = currentDir_+"/"+tmp.substr(1, tmp.length());
+	}
+	else if(tmp[0] == '.' && tmp[1] == '.')
+	{
+		tmp = getParentDir(currentDir_) + "/" + tmp.substr(2, tmp.length());
+	}
+	else if(tmp[0] != '/')
+	{
+		tmp = currentDir_+"/"+tmp;
 	}
 
-	if (name == "~") {
-		return getValue("HOME");
-	}
-
-	while ((pos = toReturn.find("~")) != std::string::npos) {
-		tmp = toReturn;
-		toReturn.clear();
-		if (pos != 0) {
-			toReturn = tmp.substr(0, pos - 1);
-			toReturn += getValue("HOME");
-			toReturn += tmp.substr(pos + 1, tmp.length());
-		} else {
-			toReturn = getValue("HOME");
-			toReturn += tmp.substr(1, tmp.length());
+	while(!tmp.empty())
+	{
+		std::string pathPiece = getPathPiece(tmp);
+		if(!pathPiece.empty() && pathPiece!=".")
+		{
+			if(pathPiece == "..")
+			{
+				toReturn = getParentDir(toReturn.substr(0,toReturn.length()-1));
+			}
+			else if(pathPiece == "~")
+			{
+				toReturn = toReturn+getValue("HOME");
+			}
+			else
+			{
+				toReturn =toReturn+pathPiece;
+			}
+			toReturn+="/";
 		}
+
+		if(toReturn!="/" && !checkIfDirExists(toReturn.substr(0, toReturn.length()-1)) )
+		{
+			return "";
+		}
+
+		tmp = cutPath(tmp);
 	}
 
-	while ((pos = toReturn.find("..")) != std::string::npos) {
-		tmp = toReturn;
-		toReturn.clear();
-		if (pos != 0) {
-			toReturn = tmp.substr(0, pos - 1);
-			toReturn += getParentDir(currentDir_);
-			toReturn += tmp.substr(pos + 2, tmp.length());
-		} else {
-			toReturn = getParentDir(currentDir_);
-			toReturn += tmp.substr(2, tmp.length());
-		}
-	}
-
-	while ((pos = toReturn.find("./")) != std::string::npos) {
-		tmp = toReturn;
-		toReturn.clear();
-		if (pos != 0) {
-			toReturn = tmp.substr(0, pos - 1);
-			toReturn += currentDir_;
-			toReturn += tmp.substr(pos + 1, tmp.length());
-		} else {
-			toReturn = currentDir_;
-			toReturn += tmp.substr(1, tmp.length());
-		}
-	}
 
 	return toReturn;
+
 }
 
 std::string Environment::searchPath(const std::string &name) {
@@ -312,6 +349,11 @@ std::string Environment::searchPath(const std::string &name) {
 			tmp += pathPiece;
 			break;
 		}
+	}
+
+	if(tmp.empty())
+	{
+		throw UnknownProgram("Program name "+ name);
 	}
 
 	if (!tmp.empty()) {
@@ -330,31 +372,19 @@ std::string Environment::getCurrentDir() {
 	return currentDir_;
 }
 
-
-bool Environment::checkIfDirExists(std::string path)
-{
-
-	std::string tmp = expandPath(path);
-
-	DIR* dir = opendir(tmp.c_str());
-
-	if(dir)
+bool Environment::checkIfDirExists(std::string path) {
+	DIR* dir = opendir(path.c_str());
+	if (dir)
 	{
+		/* Directory exists. */
 		closedir(dir);
 		return true;
 	}
-	else if(ENOENT == errno)
+	else if (ENOENT == errno)
 	{
+		/* Directory does not exist. */
 		return false;
 	}
-
-	return false;
-}
-
-int Environment::getMask() {
-	return 0;
-}
-
-void Environment::setMask() {
-
+		/* opendir() failed for some other reason. */
+		return false;
 }

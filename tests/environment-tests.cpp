@@ -2,6 +2,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <exception>
 #include "../Environment.h"
+#include "../BashExceptions.h"
 
 BOOST_AUTO_TEST_CASE( SetVatiableTest )
 {
@@ -64,15 +65,20 @@ BOOST_AUTO_TEST_CASE(IfSearchPathCannotFindSomethingThatNotExists)
 {
 	Environment env;
 	std::string programName = "This is the program with long name. It can't exist. We are on a mission from God!";
-	std::string tmp = env.searchPath(programName);
-	BOOST_CHECK(tmp.empty());
+	BOOST_CHECK_THROW(env.searchPath(programName), std::exception);
 }
 
-BOOST_AUTO_TEST_CASE(LastElementNull)
+
+BOOST_AUTO_TEST_CASE(ExpandPath1)
 {
 	Environment env;
-	char ** tmp = env.getEnvironment();
+	uid_t uid = geteuid();
+	struct passwd *pw = getpwuid(uid);
+	char * homeDir =  pw->pw_dir;
 
+	std::string tmp1(homeDir);
+	tmp1 += "/";
+	std::string tmp2 = env.expandPath("~//./././././////");
 
-	BOOST_CHECK_EQUAL(tmp[3][0], '\0');
+	BOOST_CHECK_EQUAL(tmp1, tmp2);
 }
