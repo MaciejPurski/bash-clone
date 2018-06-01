@@ -1,5 +1,6 @@
 #include "Environment.h"
 
+#include <stdio.h>
 
 const char *Environment::getUserName() {
 	uid_t uid = geteuid();              // get effective user ID
@@ -148,12 +149,22 @@ bool Environment::checkIfEnvVariableNameIsValid(const std::string name) const {
 bool Environment::searchInDir(const std::string dirName, const std::string name) {
 	DIR *dir = opendir(dirName.c_str());
 
-	struct dirent *sd = readdir(dir);
-	while (sd = readdir(dir)) {
-		if (strcpy(sd->d_name, name.c_str())) {
+	DIR* dir = opendir(dirName.c_str());
+
+	if(dir == NULL)
+	{
+		return false;
+	}
+
+	struct dirent * sd;
+	while((sd = readdir(dir)) != NULL){
+
+		if(strcmp(sd->d_name, name.c_str()) == 0)
+		{
 			return true;
 		}
 	}
+	closedir(dir);
 
 	return false;
 }
@@ -195,11 +206,10 @@ Environment::~Environment() {
 void Environment::setVariable(const std::string &name, const std::string &value) {
 	auto it = variablesMap_.find(name);
 
-	if (it != variablesMap_.end()) {
+	if(it!=variablesMap_.end()) {
 		it->second->setValue(value);
 	} else {
-		variablesMap_.insert(std::make_pair(value, std::make_unique<EnvironmentVariable>(
-				name, value, localVariable)));
+		variablesMap_.insert(std::make_pair(name, std::unique_ptr<EnvironmentVariable>(new EnvironmentVariable(name, value, localVariable))));
 	}
 }
 
@@ -318,6 +328,27 @@ void Environment::setCurrentDir(const std::string &path) {
 
 std::string Environment::getCurrentDir() {
 	return currentDir_;
+}
+
+
+bool Environment::checkIfDirExists(std::string path)
+{
+
+	std::string tmp = expandPath(path);
+
+	DIR* dir = opendir(tmp.c_str());
+
+	if(dir)
+	{
+		closedir(dir);
+		return true;
+	}
+	else if(ENOENT == errno)
+	{
+		return false;
+	}
+
+	return false;
 }
 
 int Environment::getMask() {

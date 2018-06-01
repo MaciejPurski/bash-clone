@@ -6,7 +6,6 @@
 
 int main(int argc, char *argv[])
 {
-
 	std::string initName;
 	std::string scriptName;
 
