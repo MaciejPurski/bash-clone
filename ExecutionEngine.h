@@ -21,13 +21,17 @@ private:
 	Environment &environment;
     bool executeBuiltIn(Command &command);
     int execCommand(Command &command);
+	void cdCommand(Command &command);
+	void killCommand(Command &command);
+	void envCommand(Command &command);
+	void changeProcessImage(Command &command, std::string fullPath);
+	void handleRedirection(Command::Redirection &redirection);
 
 public:
     ExecutionEngine(Environment &e);
     void executeCommandLine(std::vector<Command> commands);
 	void sendSignal(int signal);
 
-	void cdCommand(Command &command);
 };
 
 

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 /**
  * Class representing a command.
@@ -30,6 +31,22 @@ public:
 	Command() {
 		command = "";
 		term = TERM;
+	}
+
+	char **argsToArr() {
+		char ** arr = new char *[args.size() + 2];
+
+		arr[0] = new char [command.size() + 1];
+		strcpy(arr[0], command.c_str());
+
+		int i = 0;
+		for (; i < args.size(); i++) {
+			arr[i + 1] = new char [args[i].size() + 1];
+			strcpy(arr[i + 1], args[i].c_str());
+		}
+
+		arr[i + 1] = NULL;
+		return arr;
 	}
 
 };

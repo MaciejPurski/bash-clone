@@ -52,9 +52,12 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 			std::vector<Command> commands = interpreter.processCommandLine(line);
 			engine.executeCommandLine(std::move(commands));
 
+		} catch (std::logic_error &e) {
+			std::cerr << "Process error: " << e.what() << std::endl;
+			exit(1);
 		} catch (std::exception &e) {
 			// TODO exception handling
-			e.what();
+			std::cerr << e.what() << std::endl;
 		}
 	}
 }
