@@ -1,7 +1,4 @@
-//
-// Created by papryczka on 28.05.18.
-//]
-#define BOOST_TEST_MODULE First_TestSuite
+#define BOOST_TEST_MODULE ENVIRONMENT_TEST
 #include <boost/test/included/unit_test.hpp>
 #include <exception>
 #include "Environment.h"

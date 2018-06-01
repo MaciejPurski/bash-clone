@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
 	Environment env;
 	Engine e(i, env, false);
 	e.run();
-	
+	std::cout<<"path "<<env.searchPath("sleep")<<std::endl;
+
 	return 0;
 }

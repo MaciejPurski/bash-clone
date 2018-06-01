@@ -1,5 +1,6 @@
 #include "Environment.h"
 
+#include <stdio.h>
 
 const char *Environment::getUserName() {
 	uid_t uid = geteuid();              // get effective user ID
@@ -159,14 +160,20 @@ bool Environment::checkIfEnvVariableNameIsValid(const std::string name) const {
 bool Environment::searchInDir(const std::string dirName, const std::string name){
 	DIR* dir = opendir(dirName.c_str());
 
-	struct dirent * sd = readdir(dir);
+	if(dir == NULL)
+	{
+		return false;
+	}
+
+	struct dirent * sd;
 	while((sd = readdir(dir)) != NULL){
-		if(strcpy(sd->d_name, name.c_str()))
+
+		if(strcmp(sd->d_name, name.c_str()) == 0)
 		{
 			return true;
 		}
 	}
-
+	closedir(dir);
 	return false;
 }
 
@@ -351,6 +358,27 @@ void Environment::setCurrentDir(const std::string &path) {
 
 std::string Environment::getCurrentDir(const std::string &path) {
 	return currentDir_;
+}
+
+
+bool Environment::checkIfDirExists(std::string path)
+{
+
+	std::string tmp = expandPath(path);
+
+	DIR* dir = opendir(tmp.c_str());
+
+	if(dir)
+	{
+		closedir(dir);
+		return true;
+	}
+	else if(ENOENT == errno)
+	{
+		return false;
+	}
+
+	return false;
 }
 
 int Environment::getMask() {

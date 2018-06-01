@@ -240,6 +240,8 @@ class Environment {
 
 	std::string getCurrentDir(const std::string &path);
 
+	bool checkIfDirExists(std::string path);
+
 	int getMask();
 
 	void setMask();
