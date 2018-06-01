@@ -27,6 +27,7 @@ public:
     void executeCommandLine(std::vector<Command> commands);
 	void sendSignal(int signal);
 
+	void cdCommand(Command &command);
 };
 
 

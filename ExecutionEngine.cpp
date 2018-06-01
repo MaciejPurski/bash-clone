@@ -14,7 +14,7 @@ bool ExecutionEngine::executeBuiltIn(Command &command) {
 	} else if (command.command == "pwd") {
 		std::cout << environment.getCurrentDir() << std::endl;
 	} else if (command.command == "cd") {
-
+		cdCommand(command);
 	} else if (command.command == "kill") {
 
 	} else if (command.command == "env") {
@@ -43,4 +43,14 @@ void ExecutionEngine::executeCommandLine(std::vector<Command> commands) {
 	for (auto c : commands) {
 		execCommand(c);
 	}
+}
+
+void ExecutionEngine::cdCommand(Command &command) {
+	if (command.args.size() != 1) {
+		throw std::runtime_error("cd command expects one argument");
+	}
+
+	std::string expandedPath = environment.expandPath(command.args[0]);
+
+	std::cout << "expandedPath: " << expandedPath << std::endl;
 }

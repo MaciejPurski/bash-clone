@@ -35,6 +35,8 @@ void Environment::loadHomeVariable() {
 	variablesMap_.insert(std::make_pair(std::string("HOME"), std::make_unique<EnvironmentVariable>(
 			"HOME", std::string(homeDir), globalVariable)));
 
+	variablesMap_.insert(std::make_pair(std::string("PWD"), std::make_unique<EnvironmentVariable>(
+			"PWD", std::string(homeDir), globalVariable)));
 }
 
 void Environment::loadPathVariable() {
@@ -148,8 +150,6 @@ bool Environment::checkIfEnvVariableNameIsValid(const std::string name) const {
 
 bool Environment::searchInDir(const std::string dirName, const std::string name) {
 	DIR *dir = opendir(dirName.c_str());
-
-	DIR* dir = opendir(dirName.c_str());
 
 	if(dir == NULL)
 	{

@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE ENVIRONMENT_TEST
 #include <boost/test/included/unit_test.hpp>
 #include <exception>
-#include "Environment.h"
+#include "../Environment.h"
 
 BOOST_AUTO_TEST_CASE( SetVatiableTest )
 {
