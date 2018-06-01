@@ -50,7 +50,7 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 
 		try {
 
-			engine.executeCommandLine(interpreter.nextCommandLine(line));
+			engine.executeCommandLine(interpreter.processCommandLine(line));
 
 		} catch (std::exception &e) {
 			// TODO exception handling
