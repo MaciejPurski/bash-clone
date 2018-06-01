@@ -18,6 +18,7 @@
  */
 class ExecutionEngine {
 private:
+	enum Direction {IN, OUT};
 	Environment &environment;
     bool executeBuiltIn(Command &command);
     int execCommand(Command &command);
@@ -26,6 +27,7 @@ private:
 	void envCommand(Command &command);
 	void changeProcessImage(Command &command, std::string fullPath);
 	void handleRedirection(Command::Redirection &redirection);
+	std::string pipeOpen(std::string src);
 
 public:
     ExecutionEngine(Environment &e);

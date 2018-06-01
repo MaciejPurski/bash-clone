@@ -2,6 +2,7 @@
 #include <csignal>
 #include <fcntl.h>
 #include <wait.h>
+#include <sys/stat.h>
 
 ExecutionEngine::ExecutionEngine(Environment &e) : environment(e) {
 
@@ -75,7 +76,11 @@ int ExecutionEngine::execCommand(Command &command) {
 	fflush(stdout);
 
 	int status;
-	waitpid(pid, &status, 0);
+	if (command.term != Command::AMPER) {
+		waitpid(pid, &status, WUNTRACED);
+		std::cout << "finished\n";
+	}
+
 
 	//TODO: set return code
 
@@ -83,8 +88,16 @@ int ExecutionEngine::execCommand(Command &command) {
 }
 
 void ExecutionEngine::executeCommandLine(std::vector<Command> commands) {
+	std::string pipeName = "";
+
 	for (auto c : commands) {
-		execCommand(c);
+		if (!c.command.empty()) {
+			if (!pipeName.empty())
+			if (c.term == Command::PIPE) {
+
+			}
+		}
+			execCommand(c);
 	}
 }
 
@@ -171,6 +184,30 @@ void ExecutionEngine::handleRedirection(Command::Redirection &redirection) {
 		throw std::logic_error("Problem redirecting file descriptor nr: " +
 		                         std::to_string(redirection.index) + ": " + strerror(errno));
 	}
+}
+
+std::string ExecutionEngine::pipeOpen(std::string src) {
+	int fd = -1;
+	std::string fifoName;
+
+	srand (time(NULL));
+
+	// in case the file exists, try to generate a new name for it
+	do {
+		int randomNumber = rand();
+
+		if (fd > 0)
+			close(fd);
+
+		fifoName = src + std::to_string(randomNumber);
+	} while (open(fifoName.c_str(), 0) > 0);
+
+	fd = mknod(fifoName.c_str(), S_IFIFO|0666, 0);
+
+	if (fd < 0)
+		throw std::runtime_error("Can't create fifo: " + std::string(strerror(errno)));
+
+	return fifoName;
 }
 
 
