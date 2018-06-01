@@ -17,6 +17,14 @@ private:
 	void run(std::istream &input, bool interactiveMode);
 	bool interactive;
 
+	static inline std::string strToBlue(const std::string &str) {
+		return  std::string("\033[1;34m" + str + "\033[0m");
+	}
+
+	static inline std::string strToGreen(const std::string &str) {
+		return  std::string("\033[1;32m" + str + "\033[0m");
+	}
+
 public:
 	Terminal(const std::string &initFilename, const std::string &scriptFilename) : engine(env), interpreter(env) {
 		initFile.open(initFilename);

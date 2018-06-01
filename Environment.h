@@ -234,6 +234,11 @@ class Environment {
 
 	std::string searchPath(const std::string &name);
 
+	const std::unordered_map<std::string, std::unique_ptr<EnvironmentVariable>>
+	&getVariables() {
+		return this->variablesMap_;
+	};
+
 	void setCurrentDir(const std::string &path);
 
 	std::string getCurrentDir();
