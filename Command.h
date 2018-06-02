@@ -26,6 +26,8 @@ public:
 	std::string command;
 	std::vector<std::string> args;
 	std::vector<Redirection> redirections;
+	std::vector<Redirection> pipes;
+	std::string fullPath;
 	CommandTermination term;
 
 	Command() {
@@ -47,6 +49,26 @@ public:
 
 		arr[i + 1] = NULL;
 		return arr;
+	}
+
+	bool pipeTerminated() {
+		return term == PIPE;
+	}
+
+	bool isBackgroud() {
+		return term == AMPER;
+	}
+
+	void setFullPath(std::string str) {
+		fullPath = str;
+	}
+
+	bool isBuiltIn() {
+			return command == "cd" || command == "pwd" ||
+			       command == "kill" || command == "env" ||
+			       command == "bg" || command == "fg" ||
+			       command == "jobs";
+
 	}
 
 };

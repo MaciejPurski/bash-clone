@@ -3,26 +3,38 @@
 
 #include <string>
 #include <vector>
+#include <unistd.h>
+#include "Command.h"
+
 enum State {Stopped, Running, Done};
 
 class Job {
 private:
 	enum State state;
-	int gpid;
-	std::vector<int> pids;
+	pid_t gpid;
+	std::vector<Command> commands;
+	std::vector<pid_t> pids;
 	std::string commandLine;
-	bool isBlocking;
+	bool foreground;
 public:
 
-	Job(int ngpid, std::vector<int> &npids, std::string &ncommandLine,
-	    bool nisBlocking) : gpid(ngpid), pids(npids), commandLine(ncommandLine),
-                            isBlocking(nisBlocking) {
-		state = Running;
-	}
-
-	void setStopped() {
+	Job(std::vector<Command> &commands) : commands(commands) {
 
 	}
+
+	void setStopped();
+
+	void runForegroud();
+
+	void setDone();
+
+	void runBackground();
+
+	void handleRedirection(Command::Redirection &redirection);
+
+	void changeProcessImage(Command &command, bool foreground);
+
+	void start(std::string currentDir);
 };
 
 

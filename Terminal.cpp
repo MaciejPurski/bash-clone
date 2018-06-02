@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <csignal>
 #include <unistd.h>
+#include <termio.h>
 #include "Terminal.h"
 
 #define SIGSTP 20
@@ -9,10 +10,33 @@ static Terminal *t;
 
 void Terminal::start() {
 	// init script
-	run(initFile, false);
+	//run(initFile, false);
 
 	if (interactive) {
-		installSignals();
+		/* Loop until, we are in the foreground */
+		while (tcgetpgrp(STDIN_FILENO) != (shellProcessGroup = getpgrp()))
+			kill (-shellProcessGroup, SIGTTIN);
+
+		signal (SIGINT, SIG_IGN);
+		signal (SIGQUIT, SIG_IGN);
+		signal (SIGTSTP, SIG_IGN);
+		signal (SIGTTIN, SIG_IGN);
+		signal (SIGTTOU, SIG_IGN);
+		signal (SIGCHLD, SIG_IGN);
+
+		shellProcessGroup = getpid();
+		/* Our shell should become a new group's leader */
+		if (setpgid(shellProcessGroup, shellProcessGroup) < 0)
+		{
+			perror ("Couldn't put the shell in its own process group");
+			exit (1);
+		}
+
+		/* Set our new group to be the foreground group of the terminal */
+		tcsetpgrp(STDIN_FILENO, shellProcessGroup);
+
+		/* Save default terminal attributes for shell.  */
+		tcgetattr(shellProcessGroup, &shellModes);
 		run(std::cin, true);
 	} else {
 		run(scriptFile, false);
@@ -51,6 +75,9 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 		try {
 			std::vector<Command> commands = interpreter.processCommandLine(line);
 			engine.executeCommandLine(std::move(commands));
+			tcsetpgrp(STDIN_FILENO, shellProcessGroup);
+			//tcgetattr (shell_terminal, &j->tmodes);
+			//tcsetattr (STDIN_FILENO, TCSADRAIN, &shellModes);
 
 		} catch (std::logic_error &e) {
 			std::cerr << "Process error: " << e.what() << std::endl;

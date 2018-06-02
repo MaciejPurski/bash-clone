@@ -8,25 +8,16 @@ ExecutionEngine::ExecutionEngine(Environment &e) : environment(e) {
 
 }
 
-bool ExecutionEngine::executeBuiltIn(Command &command) {
-	//if (command.command == "echo") {
-		//for (auto &arg : command.args)
-		//	std::cout << arg << " ";
 
-		//std::cout << std::endl;
-		//return true;
-	//} else
+void ExecutionEngine::executeBuiltIn(Command &command) {
 	if (command.command == "pwd") {
 		std::cout << environment.getCurrentDir() << std::endl;
 	} else if (command.command == "cd") {
 		cdCommand(command);
-		return true;
 	} else if (command.command == "kill") {
 		killCommand(command);
-		return true;
 	} else if (command.command == "env") {
 		envCommand(command);
-		return true;
 	} else if (command.command == "fg") {
 
 	} else if (command.command == "bg") {
@@ -34,7 +25,7 @@ bool ExecutionEngine::executeBuiltIn(Command &command) {
 	} else if (command.command == "jobs") {
 
 	} else {
-		return false;
+		throw std::runtime_error("Unkown built-in");
 	}
 }
 
@@ -43,14 +34,20 @@ void ExecutionEngine::sendSignal(int signal) {
 }
 
 int ExecutionEngine::execCommand(Command &command) {
-	// first check if the command is built in
-	if (executeBuiltIn(command))
-		return 0;
 
+
+
+	//TODO: set return code
+
+	return 0;
+}
+
+std::string ExecutionEngine::checkCommand(Command &command) {
 	std::string fullPath;
+
 	// if the command path is not relative
 	if (command.command[0] == '/' || command.command[0] == '.' ||
-			command.command[0] == '~' || command.command.substr(0, 2) == "..") {
+	    command.command[0] == '~' || command.command.substr(0, 2) == "..") {
 		fullPath = environment.expandPath(command.command);
 	} else {
 		fullPath = environment.searchPath(command.command);
@@ -67,37 +64,39 @@ int ExecutionEngine::execCommand(Command &command) {
 	if (access(fullPath.c_str(), X_OK))
 		throw std::runtime_error("User does not have execute permission");
 
-	int pid;
-	if ((pid = fork() == 0)) {
-		changeProcessImage(command, fullPath);
-	} else if (pid < 0)
-		throw std::runtime_error("Problem while forking new process: " + std::string(strerror(errno)));
-
-	fflush(stdout);
-
-	int status;
-	if (command.term != Command::AMPER) {
-		waitpid(pid, &status, WUNTRACED);
-		std::cout << "finished\n";
-	}
-
-
-	//TODO: set return code
-
-	return 0;
+	command.setFullPath(fullPath);
+	return fullPath;
 }
 
 void ExecutionEngine::executeCommandLine(std::vector<Command> commands) {
-	std::string pipeName = "";
+	std::vector<Command> pipe;
 
-	for (auto c : commands) {
-		if (!c.command.empty()) {
-			if (!pipeName.empty())
-			if (c.term == Command::PIPE) {
+	for (auto &cmd : commands) {
+		/* The built in, which is &-terminated or is a part of a pipe
+		 * shall be ignored
+		 */
+		if (cmd.isBuiltIn()) {
+			if (!cmd.pipeTerminated() && !cmd.isBackgroud() && pipe.empty())
+				executeBuiltIn(cmd);
 
-			}
+			continue;
 		}
-			execCommand(c);
+
+		checkCommand(cmd);
+
+		/* Collect processes to form a pipeline */
+		pipe.push_back(cmd);
+
+		/* Finish the pipeline by adding it to jobs list */
+		if (!cmd.pipeTerminated()) {
+			/* Create fifo's */
+			pipeProcess(pipe);
+
+			jobs.push(Job(pipe));
+			pipe.clear();
+
+			jobs.top().start(environment.getCurrentDir());
+		}
 	}
 }
 
@@ -132,57 +131,18 @@ void ExecutionEngine::envCommand(Command &command) {
 	delete[] env;
 }
 
-void ExecutionEngine::changeProcessImage(Command &command, std::string fullPath) {
-	chdir(environment.getCurrentDir().c_str());
+/*
+ * Method changes commands redirections in order to instantiate a pipe
+ */
+void ExecutionEngine::pipeProcess(std::vector<Command> &commands) {
+	for (int i = 0; i < commands.size() - 1; i++) {
+		std::string pipeName = pipeOpen(commands[i].command);
 
-	for (auto &redirection : command.redirections) {
-		handleRedirection(redirection);
-	}
+		/* output pipe */
+		commands[i].pipes.push_back(Command::Redirection(1, false, false, pipeName));
 
-	char **args = command.argsToArr();
-
-	int ret = execv(fullPath.c_str(),
-					args);
-
-	// If exec fails, we need to exit the process
-	// TODO: different exeptions
-	throw std::logic_error("Error executing new process: " + command.command + ": " + strerror(errno));
-}
-
-void ExecutionEngine::handleRedirection(Command::Redirection &redirection) {
-	int flags = O_CREAT;
-
-	if (redirection.input) {
-		flags |= O_RDONLY;
-
-		if (redirection.index == 1 || redirection.index == 0) {
-			throw std::logic_error("Can't redirect decriptor 1 or 2 as input " +
-			                         std::to_string(redirection.index) + ": " + strerror(errno));
-		}
-
-	} else {
-		flags |= O_WRONLY;
-
-		if (redirection.index == 0) {
-			throw std::logic_error("Can't redirect decriptor 0 as output " +
-			                         std::to_string(redirection.index) + ": " + strerror(errno));
-		}
-
-		if (redirection.endOfFile)
-			flags |= O_APPEND;
-	}
-
-
-	int fd = open(redirection.fileName.c_str(), flags, S_IRUSR | S_IWUSR);
-
-	if (fd < 0) {
-		throw std::logic_error("Problem opening file: " + redirection.fileName + ": " + strerror(errno));
-	}
-
-	int ret = dup2(fd, redirection.index);
-	if (ret < 0) {
-		throw std::logic_error("Problem redirecting file descriptor nr: " +
-		                         std::to_string(redirection.index) + ": " + strerror(errno));
+		/* input pipe */
+		commands[i + 1].pipes.push_back(Command::Redirection(0, true, false, pipeName));
 	}
 }
 
@@ -197,9 +157,9 @@ std::string ExecutionEngine::pipeOpen(std::string src) {
 		int randomNumber = rand();
 
 		if (fd > 0)
-			close(fd);
+		close(fd);
 
-		fifoName = src + std::to_string(randomNumber);
+	fifoName = "/tmp/" + src + std::to_string(randomNumber);
 	} while (open(fifoName.c_str(), 0) > 0);
 
 	fd = mknod(fifoName.c_str(), S_IFIFO|0666, 0);
