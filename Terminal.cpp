@@ -91,6 +91,9 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 
 
 void Terminal::prompt() {
+	engine.update();
+	engine.showDoneBackgroundJobs();
+	engine.jobsCleanup();
 	std::cout << strToGreen(env.getValue("USER")) << ":" << strToBlue(env.getCurrentDir()) << "$ ";
 }
 

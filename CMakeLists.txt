@@ -3,9 +3,6 @@ project(bash_clone)
 
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-include_directories(${Boost_INCLUDE_DIR})
-
 add_executable(environmentTest
         tests/environment-tests.cpp Environment.h Environment.cpp)
 
