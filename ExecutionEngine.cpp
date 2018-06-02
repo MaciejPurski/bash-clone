@@ -19,11 +19,13 @@ void ExecutionEngine::executeBuiltIn(Command &command) {
 	} else if (command.command == "env") {
 		envCommand(command);
 	} else if (command.command == "fg") {
-
+		if (!jobs.empty() && !jobs.front().isDone())
+			jobs.front().runForeground(jobs.front().isStopped());
 	} else if (command.command == "bg") {
-
+		if (!jobs.empty() && !jobs.front().isDone())
+			jobs.front().runBackground(true);
 	} else if (command.command == "jobs") {
-
+		jobsCommand();
 	} else {
 		throw std::runtime_error("Unkown built-in");
 	}
@@ -89,13 +91,17 @@ void ExecutionEngine::executeCommandLine(std::vector<Command> commands) {
 
 		/* Finish the pipeline by adding it to jobs list */
 		if (!cmd.pipeTerminated()) {
-			/* Create fifo's */
-			pipeProcess(pipe);
+			int jobNumber;
 
-			jobs.push(Job(pipe));
+			if (jobs.empty())
+				jobNumber = 1;
+			else
+				jobNumber = jobs.front().getNumber() + 1;
+
+			jobs.push_front(Job(pipe, jobNumber));
 			pipe.clear();
 
-			jobs.top().start(environment.getCurrentDir());
+			jobs.front().start(environment.getCurrentDir());
 		}
 	}
 }
@@ -131,43 +137,12 @@ void ExecutionEngine::envCommand(Command &command) {
 	delete[] env;
 }
 
-/*
- * Method changes commands redirections in order to instantiate a pipe
- */
-void ExecutionEngine::pipeProcess(std::vector<Command> &commands) {
-	for (int i = 0; i < commands.size() - 1; i++) {
-		std::string pipeName = pipeOpen(commands[i].command);
-
-		/* output pipe */
-		commands[i].pipes.push_back(Command::Redirection(1, false, false, pipeName));
-
-		/* input pipe */
-		commands[i + 1].pipes.push_back(Command::Redirection(0, true, false, pipeName));
+void ExecutionEngine::jobsCommand() {
+	for (auto it = jobs.rbegin(); it != jobs.rend(); it++) {
+		std::cout << "[" << it->getNumber() << "]" << " " << it->getPid() << " " << it->getState() << " " << it->getCommandLine();
+		std::cout << std::endl;
 	}
 }
 
-std::string ExecutionEngine::pipeOpen(std::string src) {
-	int fd = -1;
-	std::string fifoName;
-
-	srand (time(NULL));
-
-	// in case the file exists, try to generate a new name for it
-	do {
-		int randomNumber = rand();
-
-		if (fd > 0)
-		close(fd);
-
-	fifoName = "/tmp/" + src + std::to_string(randomNumber);
-	} while (open(fifoName.c_str(), 0) > 0);
-
-	fd = mknod(fifoName.c_str(), S_IFIFO|0666, 0);
-
-	if (fd < 0)
-		throw std::runtime_error("Can't create fifo: " + std::string(strerror(errno)));
-
-	return fifoName;
-}
 
 

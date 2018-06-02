@@ -5,6 +5,7 @@
 #include "Environment.h"
 #include "Command.h"
 #include "Job.h"
+#include <list>
 
 /**
  * @class Engine
@@ -30,7 +31,7 @@ private:
 	void changeProcessImage(Command &command, std::string fullPath, bool foreground);
 	void handleRedirection(Command::Redirection &redirection);
 	std::string pipeOpen(std::string src);
-	std::stack<Job> jobs;
+	std::deque<Job> jobs;
 
 public:
     ExecutionEngine(Environment &e);
@@ -42,6 +43,8 @@ public:
 	void pipeProcess(std::vector<Command> &commands);
 
 	std::string checkCommand(Command &command);
+
+	void jobsCommand();
 };
 
 

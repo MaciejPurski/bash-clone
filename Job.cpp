@@ -2,8 +2,13 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <wait.h>
+#include <sys/stat.h>
 
 void Job::start(std::string currentDir) {
+	pipeProcess();
+	foreground = !commands.back().isBackgroud();
+
 	for (auto &cmd : commands) {
 		std::vector<int> pipesFd;
 
@@ -30,26 +35,15 @@ void Job::start(std::string currentDir) {
 		}
 
 		// TODO: different group leaders
-		setpgid(pid, pid);
-		tcsetpgrp(STDIN_FILENO, pid);
-
-
-		fflush(stdout);
-
-		// TODO: dont wait if exec failed
-
-		int status;
-		// TODO: waiting for any process in the group, not just last
-		if (&cmd == &commands.back() && !cmd.isBackgroud()) {
-			waitpid(pid, &status, WUNTRACED);
-			/* close pipes and unlink them */
-			for (int i = 0; i < pipesFd.size(); i++) {
-				close(pipesFd[i]);
-				unlink(cmd.pipes[i].fileName.c_str());
-			}
-
-		}
+		if (pgid == 0)
+			pgid = pid;
+		setpgid(pid, pgid);
 	}
+
+	if (foreground)
+		runForeground(false);
+	else
+		runBackground(false);
 }
 
 
@@ -61,10 +55,11 @@ void Job::changeProcessImage(Command &command, bool foreground) {
          child processes because of potential race conditions.  */
 	pid_t pid = getpid();
 
-	// TODO: process group leaders
-	//if (pgid == 0) pgid = pid;
-	/* set process in its own group */
-	setpgid(pid, pid);
+	if (pgid == 0)
+		pgid = pid;
+
+	setpgid(pid, pgid);
+
 	if (foreground)
 		tcsetpgrp(STDIN_FILENO, pid);
 
@@ -76,13 +71,14 @@ void Job::changeProcessImage(Command &command, bool foreground) {
 	char **args = command.argsToArr();
 
 	/* Set the handling for job control signals back to the default.  */
-	signal (SIGINT, SIG_DFL);
-	signal (SIGQUIT, SIG_DFL);
-	signal (SIGTSTP, SIG_DFL);
-	signal (SIGTTIN, SIG_DFL);
-	signal (SIGTTOU, SIG_DFL);
-	signal (SIGCHLD, SIG_DFL);
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	signal(SIGTSTP, SIG_DFL);
+	signal(SIGTTIN, SIG_DFL);
+	signal(SIGTTOU, SIG_DFL);
+	signal(SIGCHLD, SIG_DFL);
 
+	// TODO: environment
 	int ret = execv(command.fullPath.c_str(),
 	                args);
 
@@ -126,4 +122,121 @@ void Job::handleRedirection(Command::Redirection &redirection) {
 		throw std::logic_error("Problem redirecting file descriptor nr: " +
 		                       std::to_string(redirection.index) + ": " + strerror(errno));
 	}
+}
+
+/*
+ * Method changes commands redirections in order to instantiate a pipe
+ */
+void Job::pipeProcess() {
+	for (int i = 0; i < commands.size() - 1; i++) {
+		std::string pipeName = pipeOpen(commands[i].command);
+
+		pipes.push_back(pipeName);
+
+		/* output pipe */
+		commands[i].pipes.push_back(Command::Redirection(1, false, false, pipeName));
+
+		/* input pipe */
+		commands[i + 1].pipes.push_back(Command::Redirection(0, true, false, pipeName));
+	}
+}
+
+std::string Job::pipeOpen(std::string src) {
+	int fd = -1;
+	std::string fifoName;
+
+	srand (time(NULL));
+
+	// in case the file exists, try to generate a new name for it
+	do {
+		int randomNumber = rand();
+
+		if (fd > 0)
+			close(fd);
+
+		fifoName = "/tmp/" + src + std::to_string(randomNumber);
+	} while (open(fifoName.c_str(), 0) > 0);
+
+	fd = mknod(fifoName.c_str(), S_IFIFO|0666, 0);
+
+	if (fd < 0)
+		throw std::runtime_error("Can't create fifo: " + std::string(strerror(errno)));
+
+	return fifoName;
+}
+
+void Job::runForeground(bool cont) {
+	/* Put the job into the foreground.  */
+	tcsetpgrp(STDIN_FILENO, pgid);
+	running = commands.size();
+	state = Running;
+	foreground = true;
+	std::cout << "run foreground: " << pgid << std::endl;
+
+
+	/* Send the job a continue signal, if necessary.  */
+	if (cont) {
+		if (kill(-pgid, SIGCONT) < 0)
+			perror ("kill (SIGCONT)");
+
+	}
+
+
+	int status;
+	pid_t pid;
+	/* Wait for it to report.  */
+	while (state == Running) {
+		pid = waitpid(-pgid, &status, WUNTRACED);
+
+		if (WIFSTOPPED(status)) {
+			std::cout << "Status stopped " << std::endl;
+			running = 0;
+			state = Stopped;
+		} else if (WIFSIGNALED(status)) {
+			std::cout << "Status signaled " << std::endl;
+			state = Done;
+		} else {
+			std::cout << "Status other " << std::endl;
+			running--;
+			if (running == 0)
+				state = Done;
+		}
+	}
+
+	std::cout << "job ended\n";
+}
+
+void Job::runBackground(bool cont) {
+	foreground = false;
+	state = Running;
+
+	std::cout << "run backgroud: " << pgid << std::endl;
+
+	/* Send the job a continue signal, if necessary.  */
+	if (cont)
+		if (kill(-pgid, SIGCONT) < 0)
+			perror ("kill (SIGCONT)");
+}
+
+bool Job::isDone() {
+	return state == Done;
+}
+
+bool Job::isStopped() {
+	return state == Stopped;
+}
+
+std::string Job::getState() {
+	switch (state) {
+		case Running:
+			return "Running";
+		case Done:
+			return "Done";
+		case Stopped:
+			return "Stopped";
+	}
+}
+
+pid_t Job::getPid() {
+	return pgid;
 }
