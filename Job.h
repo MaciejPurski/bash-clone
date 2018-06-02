@@ -23,11 +23,21 @@ private:
 
 	std::string pipeOpen(std::string src);
 	void pipeProcess();
-	void changeProcessImage(Command &command, pid_t &pgid, bool foreground);
+	void changeProcessImage(Command &command, bool foreground);
 public:
 
 	Job(std::vector<Command> &commands, int number) : commands(commands), number(number) {
 		pgid = 0;
+		for (auto &c : commands) {
+			commandLine += c.command + " ";
+
+			for (auto &arg : c.args) {
+				commandLine += arg + " ";
+			}
+
+			if (c.pipeTerminated())
+				commandLine += "| ";
+		}
 	}
 
 	~Job() {
@@ -48,22 +58,6 @@ public:
 	}
 
 	std::string getCommandLine() {
-		std::string commandLine;
-
-		for (auto &c : commands) {
-			commandLine += c.command + " ";
-
-			for (auto &arg : c.args) {
-				commandLine += arg + " ";
-			}
-
-			if (c.pipeTerminated())
-				commandLine += "| ";
-		}
-
-		if (!foreground)
-			commandLine += "& ";
-
 		return commandLine;
 	}
 
@@ -72,8 +66,6 @@ public:
 	void handleRedirection(Command::Redirection &redirection);
 	void start(std::string currentDir);
 
-
-	void changeProcessImage(Command &command, bool foreground);
 
 	void runForeground(bool cont);
 
@@ -86,6 +78,16 @@ public:
 	std::string getState();
 
 	pid_t getPid();
+
+	void showJob();
+
+	void updateState();
+
+	void showDoneBackgroundJobs();
+
+	bool isBackground() {
+		return !foreground;
+	}
 };
 
 

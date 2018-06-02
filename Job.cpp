@@ -34,7 +34,6 @@ void Job::start(std::string currentDir) {
 			throw std::runtime_error("Problem while forking new process: " + std::string(strerror(errno)));
 		}
 
-		// TODO: different group leaders
 		if (pgid == 0)
 			pgid = pid;
 		setpgid(pid, pgid);
@@ -145,7 +144,7 @@ std::string Job::pipeOpen(std::string src) {
 	int fd = -1;
 	std::string fifoName;
 
-	srand (time(NULL));
+	srand(time(NULL));
 
 	// in case the file exists, try to generate a new name for it
 	do {
@@ -166,21 +165,22 @@ std::string Job::pipeOpen(std::string src) {
 }
 
 void Job::runForeground(bool cont) {
+	if (!foreground || cont)
+		std::cout << commandLine << std::endl;
+
 	/* Put the job into the foreground.  */
 	tcsetpgrp(STDIN_FILENO, pgid);
 	running = commands.size();
 	state = Running;
 	foreground = true;
-	std::cout << "run foreground: " << pgid << std::endl;
 
-
+	fflush(stdout);
 	/* Send the job a continue signal, if necessary.  */
 	if (cont) {
 		if (kill(-pgid, SIGCONT) < 0)
 			perror ("kill (SIGCONT)");
 
 	}
-
 
 	int status;
 	pid_t pid;
@@ -189,33 +189,36 @@ void Job::runForeground(bool cont) {
 		pid = waitpid(-pgid, &status, WUNTRACED);
 
 		if (WIFSTOPPED(status)) {
-			std::cout << "Status stopped " << std::endl;
 			running = 0;
 			state = Stopped;
+			foreground = false;
+			std::cout << std::endl;
+			showJob();
 		} else if (WIFSIGNALED(status)) {
-			std::cout << "Status signaled " << std::endl;
 			state = Done;
 		} else {
-			std::cout << "Status other " << std::endl;
 			running--;
 			if (running == 0)
 				state = Done;
 		}
 	}
-
-	std::cout << "job ended\n";
 }
 
 void Job::runBackground(bool cont) {
 	foreground = false;
 	state = Running;
 
-	std::cout << "run backgroud: " << pgid << std::endl;
-
+	std::cout << "[" << number << "] ";
 	/* Send the job a continue signal, if necessary.  */
-	if (cont)
+	if (cont) {
+		std::cout << commandLine + " & ";
 		if (kill(-pgid, SIGCONT) < 0)
-			perror ("kill (SIGCONT)");
+			perror("kill (SIGCONT)");
+	} else {
+		std::cout << pgid;
+	}
+
+	std::cout << std::endl;
 }
 
 bool Job::isDone() {
@@ -239,4 +242,39 @@ std::string Job::getState() {
 
 pid_t Job::getPid() {
 	return pgid;
+}
+
+void Job::showJob() {
+	std::cout << "[" << number << "]" << " " << pgid << " " << getState() << " " << commandLine;
+	if (!foreground)
+		std::cout << " &";
+	std::cout << std::endl;
+}
+
+void Job::updateState() {
+	if (state == Done)
+		return;
+
+	if (!foreground) {
+		int status;
+		pid_t pid = waitpid(-pgid, &status, WUNTRACED | WNOHANG);
+
+		/* nothing has happened */
+		if (pid == 0)
+			return;
+
+		// TODO: KILLED
+		if (WIFSTOPPED(status)) {
+			running = 0;
+			state = Stopped;
+			foreground = false;
+		} else if (WIFSIGNALED(status)) {
+			state = Done;
+		} else {
+			running--;
+			// TODO: set returning code
+			if (running == 0)
+				state = Done;
+		}
+	}
 }

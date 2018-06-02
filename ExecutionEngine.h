@@ -45,6 +45,10 @@ public:
 	std::string checkCommand(Command &command);
 
 	void jobsCommand();
+	void update();
+	void showDoneBackgroundJobs();
+
+	void jobsCleanup();
 };
 
 

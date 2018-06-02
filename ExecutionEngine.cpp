@@ -36,11 +36,7 @@ void ExecutionEngine::sendSignal(int signal) {
 }
 
 int ExecutionEngine::execCommand(Command &command) {
-
-
-
 	//TODO: set return code
-
 	return 0;
 }
 
@@ -138,11 +134,36 @@ void ExecutionEngine::envCommand(Command &command) {
 }
 
 void ExecutionEngine::jobsCommand() {
-	for (auto it = jobs.rbegin(); it != jobs.rend(); it++) {
-		std::cout << "[" << it->getNumber() << "]" << " " << it->getPid() << " " << it->getState() << " " << it->getCommandLine();
-		std::cout << std::endl;
-	}
+	/* Update background jobs state */
+	update();
+
+	for (auto it = jobs.rbegin(); it != jobs.rend(); it++)
+		it->showJob();
+
+	jobsCleanup();
 }
 
+void ExecutionEngine::showDoneBackgroundJobs() {
+	for (auto it = jobs.rbegin(); it != jobs.rend(); it++)
+		if (it->isDone() && it->isBackground())
+			it->showJob();
+}
 
+void ExecutionEngine::update() {
+	for (auto &job : jobs)
+		job.updateState();
+}
+
+void ExecutionEngine::jobsCleanup() {
+	for (auto it = jobs.begin(); it != jobs.end(); it++) {
+		if (it->isDone()) {
+			jobs.erase(it);
+
+			/* we need to call it recursively as the iterator is invalid */
+			jobsCleanup();
+			break;
+		}
+	}
+
+}
 
