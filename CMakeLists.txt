@@ -16,4 +16,5 @@ add_executable(interpreterTest
         tests/interpreter-tests.cpp Interpreter.h Interpreter.cpp BashExceptions.h)
 
 add_executable(bash_clone
-        main.cpp ExecutionEngine.cpp ExecutionEngine.h Interpreter.cpp Interpreter.h Command.h Environment.cpp Environment.h Terminal.cpp Terminal.h BashExceptions.h)
+        main.cpp ExecutionEngine.cpp ExecutionEngine.h Interpreter.cpp Interpreter.h Command.h Environment.cpp Environment.h Terminal.cpp Terminal.h Job.cpp Job.h)
+

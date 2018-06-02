@@ -3,6 +3,7 @@
 
 
 #include <fstream>
+#include <termios.h>
 #include "Interpreter.h"
 #include "Environment.h"
 #include "ExecutionEngine.h"
@@ -13,6 +14,8 @@ private:
 	Interpreter interpreter;
 	ExecutionEngine engine;
 	std::ifstream initFile, scriptFile;
+	pid_t shellProcessGroup;
+	struct termios shellModes;
 	int pid;
 	void run(std::istream &input, bool interactiveMode);
 	bool interactive;
