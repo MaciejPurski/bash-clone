@@ -63,6 +63,47 @@ public:
 	}
 };
 
+class MissingProfileFile : public EnvironmentException
+{
+public:
+	MissingProfileFile()
+		:EnvironmentException("")
+	{}
+
+	virtual const char* what() const noexcept override
+	{
+		std::string tmp = "Missing profile file!";
+		return tmp.c_str();
+	}
+};
+
+class ErrorInProfile : public EnvironmentException
+{
+public:
+	ErrorInProfile(const std::string&msg )
+			:EnvironmentException(msg)
+	{}
+
+	virtual const char * what() const noexcept override
+	{
+		std::string tmp = "Error in profile! Message: " + msg_;
+		return tmp.c_str();
+	}
+};
+
+class MissingPathEnvInProfile : public EnvironmentException
+{
+public:
+	MissingPathEnvInProfile()
+			:EnvironmentException("")
+	{}
+
+	virtual const char* what() const noexcept override
+	{
+		return std::string("Missing $PATH env in profile!").c_str();
+	}
+};
+
 class EngineException : public BashCloneException
 {
 public:
