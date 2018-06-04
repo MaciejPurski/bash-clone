@@ -9,6 +9,18 @@ int main(int argc, char *argv[])
 	std::string initName;
 	std::string scriptName;
 
+	try {
+		Environment env;
+		std::cout << env.expandPath("~/Obrazy/Makefile") << std::endl;
+		std::cout << env.getValue("PATH") << std::endl;
+		std::cout << env.getValue("OTHER") <<std::endl;
+	}
+	catch(EnvironmentException &ex)
+	{
+		std::cout<<"EX\n";
+		std::cout<<ex.what()<<std::endl;
+	}
+	/*
 	if (argc < 2) {
 		std::cout << "Not enough arguments\nUsage: bash-clone <init_script_name> [optional] -c <script_name>\n";
 		exit(1);
@@ -30,6 +42,6 @@ int main(int argc, char *argv[])
 
 	Terminal t(initName, scriptName);
 	t.start();
-
+*/
 	return 0;
 }
