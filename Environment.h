@@ -271,6 +271,8 @@ class Environment {
 	 */
 
 	bool checkIfDirExists(std::string path);
+
+	int countGlovalVariables() const;
 };
 
 

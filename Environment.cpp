@@ -145,6 +145,16 @@ bool Environment::isLocalVariable(const std::string &name) const {
 
 }
 
+int Environment::countGlovalVariables() const {
+	int n = 0;
+	for (auto &var : variablesMap_) {
+		if (var.second->isGlobal())
+			n++;
+	}
+
+	return n;
+}
+
 std::vector<std::string> Environment::getPathPieces() const {
 	unsigned int index = 0;
 	std::string tmpPath = getValue("PATH");
@@ -291,10 +301,14 @@ void Environment::exportVariable(const std::string &name) {
 }
 
 char **Environment::getEnvironment() {
-	char **tmp = new char *[variablesMap_.size() + 1]; // +1 because of /0 as last one
+	int nGlobals = countGlovalVariables();
+
+	char **tmp = new char *[nGlobals + 1]; // +1 because of /0 as last one
 
 	int i = 0;
 	for (auto &it : variablesMap_) {
+		if (!it.second->isGlobal())
+			continue;
 		tmp[i] = new char[it.second->getName().length() + it.second->getValue().length() + 2]; // +2 because of '=' and '\0'
 		std::string tmpStr = it.second->getName() + "=" + it.second->getValue();
 		strcpy(tmp[i], tmpStr.c_str());
