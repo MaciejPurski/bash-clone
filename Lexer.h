@@ -21,14 +21,6 @@ public:
     std::vector<Token> separateTokens(std::string &line);
 
 private:
-    /*
-    Token getNextToken(std::string &line, int it);
-    bool tryWhitespace(std::string &line, int it, Token &token);
-
-    bool tryQuotation(std::string &line, int it, Token &token);
-    bool tryCommandEnd(std::string &line, int it, Token &token);
-    bool tryStream(std::string &line, int it, Token &token);*/
-
     /**
 	 * @brief Checks if sign is on list of signs, used to check if the sign
      * is one of the given signs
