@@ -70,11 +70,6 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<EnvironmentVariable>> variablesMap_;
 	std::string currentDir_;
 	int returnCode;
-public:
-	int getReturnCode() const;
-
-	void setReturnCode(int returnCode);
-
 private:
 
 	/**
@@ -168,7 +163,6 @@ private:
 	std::string getPathPiece(std::string path);
 
 public:
-
 	/**
 	 * @brief Constructor reads ~/.profile and /etc/enviroment to get PATH variables and it use
 	 * getpwuid to ged HOME and USER
@@ -272,9 +266,13 @@ public:
 
 	bool checkIfDirExists(std::string path) const;
 
-	int countGlovalVariables() const;
+	int countGlobalVariables() const;
 
 	std::string resolveCommand(std::string &command);
+
+	int getReturnCode() const;
+
+	void setReturnCode(int returnCode);
 };
 
 

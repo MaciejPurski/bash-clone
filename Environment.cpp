@@ -60,7 +60,7 @@ bool Environment::isLocalVariable(const std::string &name) const {
 
 }
 
-int Environment::countGlovalVariables() const {
+int Environment::countGlobalVariables() const {
 	int n = 0;
 	for (auto &var : variablesMap_) {
 		if (var.second->isGlobal())
@@ -210,7 +210,7 @@ void Environment::exportVariable(const std::string &name) {
 }
 
 char **Environment::getEnvironment() const {
-	int nGlobals = countGlovalVariables();
+	int nGlobals = countGlobalVariables();
 
 	char **tmp = new char *[nGlobals + 1]; // +1 because of /0 as last one
 
