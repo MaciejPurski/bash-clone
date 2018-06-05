@@ -60,7 +60,7 @@ std::vector<Token> Lexer::separateTokens(std::string &line) {
                        it < line.size()) {
                     bufor.push_back(line[it++]);
                 }
-                tokens.emplace_back(WITH$, bufor);
+                tokens.emplace_back(VARIABLE, bufor);
             } else {
                 while (!checkSign(line[it], {'|', '&', ';', '\'', '$', '<', '>'}) && !isspace(line[it]) && it < line.size()) {
                     if (line[it] == '=')
