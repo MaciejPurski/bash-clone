@@ -5,9 +5,8 @@
 #include <sys/stat.h>
 
 ExecutionEngine::ExecutionEngine(Environment &e) : environment(e) {
-
+	nextJobNumber = 1;
 }
-
 
 void ExecutionEngine::executeBuiltIn(Command &command) {
 	if (command.command == "pwd") {
@@ -32,17 +31,7 @@ void ExecutionEngine::executeBuiltIn(Command &command) {
 }
 
 std::string ExecutionEngine::checkCommand(Command &command) {
-	std::string fullPath;
-
-	// if the command path is not relative
-	if (command.command[0] == '/' || command.command[0] == '.' ||
-	    command.command[0] == '~' || command.command.substr(0, 2) == "..") {
-		fullPath = environment.expandPath(command.command);
-	} else {
-		fullPath = environment.searchPath(command.command);
-		if (fullPath.empty())
-			throw std::runtime_error("Can't find command: " + command.command);
-	}
+	std::string fullPath = environment.resolveCommand(command.command);
 
 	if (access(fullPath.c_str(), F_OK))
 		throw std::runtime_error("File does not exist");
@@ -57,7 +46,7 @@ std::string ExecutionEngine::checkCommand(Command &command) {
 	return fullPath;
 }
 
-void ExecutionEngine::executeCommandLine(std::vector<Command> commands) {
+void ExecutionEngine::executeCommandLine(std::vector<Command> &commands) {
 	std::vector<Command> pipe;
 
 	for (auto &cmd : commands) {
@@ -80,17 +69,8 @@ void ExecutionEngine::executeCommandLine(std::vector<Command> commands) {
 
 		/* Finish the pipeline by adding it to jobs list */
 		if (!cmd.pipeTerminated()) {
-			int jobNumber;
-
-			if (jobs.empty())
-				jobNumber = 1;
-			else
-				jobNumber = jobs.front().getNumber() + 1;
-
-			jobs.push_front(Job(pipe, jobNumber));
+			addJob(pipe);
 			pipe.clear();
-
-			jobs.front().start(environment.getCurrentDir());
 		}
 	}
 }
@@ -116,7 +96,7 @@ void ExecutionEngine::cdCommand(Command &command) {
 void ExecutionEngine::envCommand(Command &command) {
 	char **env = environment.getEnvironment();
 
-	for (int i = 0; env[i] != NULL; i++) {
+	for (int i = 0; env[i] != nullptr; i++) {
 		std::cout << env[i] << std::endl;
 		delete[] env[i];
 	}
@@ -179,5 +159,13 @@ void ExecutionEngine::exportCommand(Command &command) {
 
 		environment.exportVariable(valName);
 	}
+}
+
+void ExecutionEngine::addJob(std::vector<Command> &pipe) {
+	if (jobs.empty())
+		nextJobNumber = 1;
+
+	jobs.push_front(Job(pipe, nextJobNumber++));
+	jobs.front().start(environment);
 }
 

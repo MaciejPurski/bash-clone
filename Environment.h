@@ -126,7 +126,7 @@ class Environment {
 	 * @return vector of "PATH" pieces
 	 */
 
-	std::vector<std::string> getPathPieces() const;
+	std::vector<std::string> getPathPieces();
 
 	/**
 	 * @brief It use dirent.h API to search in given directory file
@@ -135,7 +135,7 @@ class Environment {
 	 * @return file path or empty string if is not in that directory
 	 */
 
-	bool searchInDir(const std::string dirName, std::string name);
+	bool searchInDir(const std::string dirName, std::string name) const;
 
 	/**
 	 * @brief Check if given env variable name is valid with Std 1003.1-2001
@@ -209,7 +209,7 @@ class Environment {
 	 * @return Null-terminated array of pointers to char*.
 	 */
 
-	char **getEnvironment();
+	char **getEnvironment() const;
 
 	/**
 	 * @brief Expands a given path according to environmental variables:
@@ -256,7 +256,7 @@ class Environment {
 	 * @return current path
 	 */
 
-	std::string getCurrentDir();
+	std::string getCurrentDir() const;
 
 	/**
 	 * @brief Checks if dir with given exists. It simply use closedir function.
@@ -264,9 +264,11 @@ class Environment {
 	 * @return true if exists, false if not exists
 	 */
 
-	bool checkIfDirExists(std::string path);
+	bool checkIfDirExists(std::string path) const;
 
 	int countGlovalVariables() const;
+
+	std::string resolveCommand(std::string &command);
 };
 
 

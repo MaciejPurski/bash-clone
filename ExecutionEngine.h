@@ -9,41 +9,69 @@
 
 /**
  * @class Engine
- * @brief Main bash engine class.
+ * @brief Bash execution engine class
  *
- * Implements main program loop, which
- * fetches commands from the interpreter and executes commands.
+ * The class is responsible for preparing commands to be ran by
+ * creating an abstraction of a pipeline - *job*.
  *
- * It implements both interactive and non-interactive mode. In
- * interactive mode the program shows encourage symbol and waits for user's input.
- * In non-interactive mode it executes all commands until the EOF is reached
- * and finishes execution.
+ * It takes care of executing built-in commands and managing
+ * job control system.
  */
 class ExecutionEngine {
 private:
 	enum Direction {IN, OUT};
 	Environment &environment;
-    void executeBuiltIn(Command &command);
+	std::deque<Job> jobs;
+	int nextJobNumber;
+
+	void addJob(std::vector<Command> &pipe);
+
+	/* Built-in commands */
+	void executeBuiltIn(Command &command);
 	void cdCommand(Command &command);
 	void envCommand(Command &command);
 	void exportCommand(Command &command);
-	std::deque<Job> jobs;
-
-public:
-    ExecutionEngine(Environment &e);
-    void executeCommandLine(std::vector<Command> commands);
-	void sendSignal(int signal);
-
-	std::string checkCommand(const Command &command);
-
-	void pipeProcess(std::vector<Command> &commands);
+	void jobsCommand();
 
 	std::string checkCommand(Command &command);
 
-	void jobsCommand();
+public:
+	/**
+	 * @brief Basic Execution engine constructor
+	 * @param e Reference to the Environment class
+	 */
+    ExecutionEngine(Environment &e);
+
+    /**
+     * @brief Basic method of the Engine class used for commands execution
+     *
+     * The method checks commands correctness and calls the environment in
+     * order to resolve commands name and paths. It recognizes if the command is
+     * a built-in. It then looks for pipes in the command line and creates a new
+     * job, which is put on the jobs queue and executed in the background or in the foreground.
+     * @param commands A vector of commands to be executed
+     */
+    void executeCommandLine(std::vector<Command> &commands);
+
+    /**
+     * @brief Update jobs' state
+     *
+     * The method iterates over all jobs and calls for updating their
+     * state.
+     */
 	void update();
+
+	/**
+	 * @brief Show all background jobs which has been done
+	 *
+	 * Called in the prompt method in order to show done backround jobs,
+	 * in the Shell's prompt method, when the user presses ENTER.
+	 */
 	void showDoneBackgroundJobs();
 
+	/**
+	 * @brief Remove done jobs
+	 */
 	void jobsCleanup();
 };
 

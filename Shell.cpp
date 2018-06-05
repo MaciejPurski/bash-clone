@@ -39,7 +39,7 @@ void Shell::run(std::istream &input, bool interactiveMode) {
 	while (!(line = buildLine(input, interactiveMode)).empty()) {
 		try {
 			std::vector<Command> commands = interpreter.processCommandLine(line);
-			engine.executeCommandLine(std::move(commands));
+			engine.executeCommandLine(commands);
 			tcsetpgrp(STDIN_FILENO, shellProcessGroup);
 		} catch (std::logic_error &e) {
 			std::cerr << "Process error: " << e.what() << std::endl;
@@ -53,7 +53,6 @@ void Shell::run(std::istream &input, bool interactiveMode) {
 	if (interactiveMode)
 		std::cout << "\nExiting\n";
 }
-
 
 void Shell::prompt() {
 	engine.update();

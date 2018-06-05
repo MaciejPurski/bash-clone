@@ -5,6 +5,7 @@
 #include <vector>
 #include <unistd.h>
 #include "Command.h"
+#include "Environment.h"
 
 enum State {Stopped, Running, Done};
 
@@ -13,20 +14,18 @@ private:
 	enum State state;
 	pid_t pgid;
 	std::vector<Command> commands;
-	std::vector<pid_t> pids;
 	std::string commandLine;
 	int running = 0;
 	std::vector<std::string> pipes;
 	bool foreground;
 	int number;
 
-
 	std::string pipeOpen(std::string src);
 	void pipeProcess();
 	void changeProcessImage(Command &command, bool foreground);
 public:
 
-	Job(std::vector<Command> &commands, int number) : commands(commands), number(number) {
+	Job(std::vector<Command> &commands, int number) : commands(std::move(commands)), number(number) {
 		pgid = 0;
 		for (auto &c : commands) {
 			commandLine += c.command + " ";
@@ -64,8 +63,7 @@ public:
 
 
 	void handleRedirection(Command::Redirection &redirection);
-	void start(std::string currentDir);
-
+	void start(const Environment &env);
 
 	void runForeground(bool cont);
 
@@ -88,6 +86,12 @@ public:
 	bool isBackground() {
 		return !foreground;
 	}
+
+	void changeProcessImage(Command &command, bool foreground, char **environment);
+
+	void changeProcessImage(Command &command, bool foreground, const Environment &env);
+
+	void setDefaultSignalsHandling();
 };
 
 

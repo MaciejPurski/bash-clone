@@ -1,7 +1,6 @@
 #include "Environment.h"
 
-#include <stdio.h>
-
+#include <cstdio>
 
 const char *Environment::getUserName() {
 	uid_t uid = geteuid();              // get effective user ID
@@ -71,7 +70,7 @@ int Environment::countGlovalVariables() const {
 	return n;
 }
 
-std::vector<std::string> Environment::getPathPieces() const {
+std::vector<std::string> Environment::getPathPieces() {
 	unsigned int index = 0;
 	std::string tmpPath = getValue("PATH");
 	std::string tmpString;
@@ -91,7 +90,7 @@ std::vector<std::string> Environment::getPathPieces() const {
 	return pathPieces;
 }
 
-bool Environment::searchInDir(const std::string dirName, const std::string name) {
+bool Environment::searchInDir(const std::string dirName, const std::string name) const {
 	DIR *dir = opendir(dirName.c_str());
 
 	if (dir == NULL) {
@@ -210,7 +209,7 @@ void Environment::exportVariable(const std::string &name) {
 		it->second->setGlobal();
 }
 
-char **Environment::getEnvironment() {
+char **Environment::getEnvironment() const {
 	int nGlobals = countGlovalVariables();
 
 	char **tmp = new char *[nGlobals + 1]; // +1 because of /0 as last one
@@ -315,11 +314,11 @@ void Environment::setCurrentDir(const std::string &path) {
 	currentDir_ = path;
 }
 
-std::string Environment::getCurrentDir() {
+std::string Environment::getCurrentDir() const {
 	return currentDir_;
 }
 
-bool Environment::checkIfDirExists(std::string path) {
+bool Environment::checkIfDirExists(std::string path) const {
 	DIR *dir = opendir(path.c_str());
 	if (dir) {
 		/* Directory exists. */
@@ -328,4 +327,19 @@ bool Environment::checkIfDirExists(std::string path) {
 	}
 
 	return false;
+}
+
+std::string Environment::resolveCommand(std::string &command) {
+	std::string fullPath;
+
+	if (command.front() == '/' || command.front() == '.' ||
+	    command.front() == '~' || command.substr(0, 2) == "..") {
+		fullPath = expandPath(command);
+	} else {
+		fullPath = searchPath(command);
+		if (fullPath.empty())
+			throw std::runtime_error("Can't find command: " + command);
+	}
+
+	return fullPath;
 }

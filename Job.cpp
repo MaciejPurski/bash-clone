@@ -5,7 +5,7 @@
 #include <wait.h>
 #include <sys/stat.h>
 
-void Job::start(std::string currentDir) {
+void Job::start(const Environment &env) {
 	pipeProcess();
 	foreground = !commands.back().isBackgroud();
 
@@ -23,13 +23,13 @@ void Job::start(std::string currentDir) {
 				pipesFd.push_back(open(f.fileName.c_str(), flags));
 			}
 
-			chdir(currentDir.c_str());
+			chdir(env.getCurrentDir().c_str());
 
 			for (int i = 0; i < pipesFd.size(); i++) {
 				dup2(pipesFd[i], cmd.pipes[i].index);
 			}
 
-			changeProcessImage(cmd, !commands.back().isBackgroud());
+			changeProcessImage(cmd, !commands.back().isBackgroud(), env);
 		} else if (pid < 0) {
 			throw std::runtime_error("Problem while forking new process: " + std::string(strerror(errno)));
 		}
@@ -46,12 +46,13 @@ void Job::start(std::string currentDir) {
 }
 
 
-void Job::changeProcessImage(Command &command, bool foreground) {
-
-	/* Put the process into the process group and give the process group
-         the terminal, if appropriate.
-         This has to be done both by the shell and in the individual
-         child processes because of potential race conditions.  */
+/**
+ * Put the process into the process group and give the process group
+ *	 the terminal, if appropriate.
+ *	 This has to be done both by the shell and in the individual
+ *	 child processes because of potential race conditions.
+ */
+void Job::changeProcessImage(Command &command, bool foreground, const Environment &env) {
 	pid_t pid = getpid();
 
 	if (pgid == 0)
@@ -62,24 +63,15 @@ void Job::changeProcessImage(Command &command, bool foreground) {
 	if (foreground)
 		tcsetpgrp(STDIN_FILENO, pid);
 
-
 	for (auto &redirection : command.redirections) {
 		handleRedirection(redirection);
 	}
 
-	char **args = command.argsToArr();
+	setDefaultSignalsHandling();
 
-	/* Set the handling for job control signals back to the default.  */
-	signal(SIGINT, SIG_DFL);
-	signal(SIGQUIT, SIG_DFL);
-	signal(SIGTSTP, SIG_DFL);
-	signal(SIGTTIN, SIG_DFL);
-	signal(SIGTTOU, SIG_DFL);
-	signal(SIGCHLD, SIG_DFL);
-
-	// TODO: environment
-	int ret = execv(command.fullPath.c_str(),
-	                args);
+	int ret = execve(command.fullPath.c_str(),
+	                 command.argsToArr(),
+					 env.getEnvironment());
 
 	// If exec fails, we need to exit the process
 	// TODO: different exeptions
@@ -277,4 +269,14 @@ void Job::updateState() {
 				state = Done;
 		}
 	}
+}
+
+void Job::setDefaultSignalsHandling() {
+	/* Set the handling for job control signals back to the default.  */
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	signal(SIGTSTP, SIG_DFL);
+	signal(SIGTTIN, SIG_DFL);
+	signal(SIGTTOU, SIG_DFL);
+	signal(SIGCHLD, SIG_DFL);
 }
