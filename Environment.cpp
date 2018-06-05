@@ -414,17 +414,11 @@ std::string Environment::getCurrentDir() {
 
 bool Environment::checkIfDirExists(std::string path) {
 	DIR* dir = opendir(path.c_str());
-	if (dir)
-	{
+	if (dir) {
 		/* Directory exists. */
 		closedir(dir);
 		return true;
 	}
-	else if (ENOENT == errno)
-	{
-		/* Directory does not exist. */
-		return false;
-	}
-		/* opendir() failed for some other reason. */
-		return false;
+
+	return false;
 }
