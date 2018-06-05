@@ -2,13 +2,13 @@
 #include <csignal>
 #include <unistd.h>
 #include <termio.h>
-#include "Terminal.h"
+#include "Shell.h"
 
 #define SIGSTP 20
 
-static Terminal *t;
+static Shell *t;
 
-void Terminal::start() {
+void Shell::start() {
 	// init script
 
 	if (interactive) {
@@ -43,7 +43,7 @@ void Terminal::start() {
 	}
 }
 
-void Terminal::run(std::istream &input, bool interactiveMode) {
+void Shell::run(std::istream &input, bool interactiveMode) {
 	std::string line;
 
 	while (true) {
@@ -90,77 +90,9 @@ void Terminal::run(std::istream &input, bool interactiveMode) {
 }
 
 
-void Terminal::prompt() {
+void Shell::prompt() {
 	engine.update();
 	engine.showDoneBackgroundJobs();
 	engine.jobsCleanup();
 	std::cout << strToGreen(env.getValue("USER")) << ":" << strToBlue(env.getCurrentDir()) << "$ ";
-}
-
-
-void signalHandler(int signal) {
-	switch (signal) {
-
-		case SIGINT:
-			t->sigint();
-			break;
-		case SIGSTP:
-			t->sigstp();
-			break;
-		case SIGQUIT:
-			t->sigquit();
-			break;
-		default:
-			std::cerr << "UNKOWN SIGNAL\n";
-	}
-}
-
-
-void Terminal::installSignals() {
-	struct sigaction sa;
-
-	t = this;
-
-	sa.sa_handler = &signalHandler;
-
-	// Restart the system call, if at all possible
-	sa.sa_flags = SA_RESTART;
-
-	// Block every signal during the handler
-	sigfillset(&sa.sa_mask);
-
-
-	if (sigaction(SIGINT, &sa, nullptr) == -1) {
-		perror("Error: cannot handle SIGINT"); // Should not happen
-	}
-
-	if (sigaction(SIGQUIT, &sa, nullptr) == -1) {
-		perror("Error: cannot handle SIGQUIT"); // Should not happen
-	}
-
-	if (sigaction(SIGSTP, &sa, nullptr) == -1) {
-		perror("Error: cannot handle SIGSTP"); // Should not happen
-	}
-}
-
-void Terminal::sigquit() {
-	engine.sendSignal(SIGQUIT);
-
-	std::cout << "\nQuit(core dumped)\n";
-	t->prompt();
-	std::cout.flush();
-}
-
-void Terminal::sigint() {
-	engine.sendSignal(SIGINT);
-	std::cout << std::endl;
-	t->prompt();
-	std::cout.flush();
-}
-
-void Terminal::sigstp() {
-	engine.sendSignal(SIGSTP);
-	std::cout << "\nStopped\n";
-	t->prompt();
-	std::cout.flush();
 }

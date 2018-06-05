@@ -8,7 +8,7 @@
 #include "Environment.h"
 #include "ExecutionEngine.h"
 
-class Terminal {
+class Shell {
 private:
 	Environment env;
 	Interpreter interpreter;
@@ -16,7 +16,6 @@ private:
 	std::ifstream initFile, scriptFile;
 	pid_t shellProcessGroup;
 	struct termios shellModes;
-	int pid;
 	void run(std::istream &input, bool interactiveMode);
 	bool interactive;
 
@@ -29,7 +28,7 @@ private:
 	}
 
 public:
-	Terminal(const std::string &initFilename, const std::string &scriptFilename) : engine(env), interpreter(env) {
+	Shell(const std::string &initFilename, const std::string &scriptFilename) : engine(env), interpreter(env) {
 		initFile.open(initFilename);
 
 		if (!scriptFilename.empty()) {
@@ -41,13 +40,6 @@ public:
 	}
 
 	void start();
-
-	void sigint();
-	void sigstp();
-	void sigquit();
-
-	void installSignals();
-
 	void prompt();
 };
 

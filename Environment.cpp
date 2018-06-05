@@ -122,57 +122,6 @@ void Environment::loadVariablesFromProfile() {
 	{
 		throw MissingProfileFile();
 	}
-
-	/*
-	std::string lineFromFile;
-
-	std::string pathFromEnvironment;
-	std::string pathFromProfile;
-	std::string completePathValue;
-
-
-	// /etc/environment:
-	const int pathNameLenght = std::string("PATH=\"").length();
-	const int pathEnvLenght = std::string("$PATH\"").length();
-	pathFile.open("/etc/environment", std::ios_base::in);
-	if(pathFile.good()) {
-
-		while (std::getline(pathFile, lineFromFile)) {
-			if (lineFromFile.find("PATH=") == 0) {
-				break;
-			}
-		}
-		pathFile.close();
-		pathFromEnvironment = lineFromFile.substr(pathNameLenght, lineFromFile.length() - pathNameLenght-1);
-	}
-
-	// HOME/.profile
-
-	pathFile.open(std::string(getValue("HOME") + "/.profile"), std::ios_base::in);
-	if(pathFile.good()) {
-		while (std::getline(pathFile, lineFromFile)) {
-			if (lineFromFile.find("PATH") == 0) {
-				break;
-			}
-		}
-		pathFile.close();
-		pathFromProfile = lineFromFile.substr(pathNameLenght, lineFromFile.length() - pathNameLenght - pathEnvLenght);
-
-		int homeIndex;
-		while ((homeIndex = pathFromProfile.find("$HOME")) != std::string::npos) {
-			pathFromProfile =
-					pathFromProfile.substr(0, homeIndex) + getValue("HOME") + pathFromProfile.substr(homeIndex + std::string("$HOME").length());
-		}
-	}
-
-	if(!pathFromProfile.empty() && !pathFromEnvironment.empty()) {
-		completePathValue = pathFromProfile + pathFromEnvironment;
-	}
-
-
-	variablesMap_.insert(std::make_pair(std::string("PATH"), std::make_unique<EnvironmentVariable>(
-			"PATH", std::string(completePathValue), globalVariable)));
-	*/
 }
 
 bool Environment::variableExists(const std::string &name) const {

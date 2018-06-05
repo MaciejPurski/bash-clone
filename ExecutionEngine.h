@@ -24,13 +24,8 @@ private:
 	enum Direction {IN, OUT};
 	Environment &environment;
     void executeBuiltIn(Command &command);
-    int execCommand(Command &command);
 	void cdCommand(Command &command);
-	void killCommand(Command &command);
 	void envCommand(Command &command);
-	void changeProcessImage(Command &command, std::string fullPath, bool foreground);
-	void handleRedirection(Command::Redirection &redirection);
-	std::string pipeOpen(std::string src);
 	std::deque<Job> jobs;
 
 public:

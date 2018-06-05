@@ -14,8 +14,6 @@ void ExecutionEngine::executeBuiltIn(Command &command) {
 		std::cout << environment.getCurrentDir() << std::endl;
 	} else if (command.command == "cd") {
 		cdCommand(command);
-	} else if (command.command == "kill") {
-		killCommand(command);
 	} else if (command.command == "env") {
 		envCommand(command);
 	} else if (command.command == "fg") {
@@ -29,15 +27,6 @@ void ExecutionEngine::executeBuiltIn(Command &command) {
 	} else {
 		throw std::runtime_error("Unkown built-in");
 	}
-}
-
-void ExecutionEngine::sendSignal(int signal) {
-
-}
-
-int ExecutionEngine::execCommand(Command &command) {
-	//TODO: set return code
-	return 0;
 }
 
 std::string ExecutionEngine::checkCommand(Command &command) {
@@ -118,10 +107,6 @@ void ExecutionEngine::cdCommand(Command &command) {
 	}
 
 	environment.setCurrentDir(expanded);
-}
-
-void ExecutionEngine::killCommand(Command &command) {
-
 }
 
 void ExecutionEngine::envCommand(Command &command) {

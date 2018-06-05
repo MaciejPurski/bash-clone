@@ -146,7 +146,7 @@ public:
 
 	virtual const char* what() const noexcept override
 	{
-		std::string tmp = "Terminal exception! Message: "+ msg_;
+		std::string tmp = "Shell exception! Message: "+ msg_;
 		return tmp.c_str();
 	}
 
