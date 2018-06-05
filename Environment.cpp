@@ -348,8 +348,6 @@ std::string Environment::expandPath(const std::string &name) {
 		tmp = currentDir_+"/"+tmp;
 	}
 
-	std::cout<<"To expand "<<tmp<<std::endl;
-
 	while(!tmp.empty())
 	{
 		std::string pathPiece = getPathPiece(tmp);
@@ -394,26 +392,16 @@ std::string Environment::expandPath(const std::string &name) {
 
 std::string Environment::searchPath(const std::string &name) {
 	std::vector<std::string> pathPieces = getPathPieces();
-	std::string tmp;
+	std::string resultPath;
 
 	for (auto &pathPiece : pathPieces) {
 		if (searchInDir(pathPiece, name)) {
-			tmp += pathPiece;
+			resultPath = pathPiece + "/" + name;
 			break;
 		}
 	}
 
-	if(tmp.empty())
-	{
-		throw UnknownProgram("Program name "+ name);
-	}
-
-	if (!tmp.empty()) {
-		tmp += "/";
-		tmp += name;
-	}
-
-	return tmp;
+	return resultPath;
 }
 
 void Environment::setCurrentDir(const std::string &path) {
