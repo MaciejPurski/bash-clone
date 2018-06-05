@@ -98,12 +98,6 @@ class Environment {
 	void loadHomeVariable();
 
 	/**
-	 * @brief Insert into variables map env variables from file profile, it must have PATH value!
-	 */
-
-	void loadVariablesFromProfile();
-
-	/**
 	 * @brief Check if exist env variable with given name
 	 * @param name env variable name
 	 * @return true if exist, false if not exist
