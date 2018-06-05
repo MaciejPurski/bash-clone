@@ -26,6 +26,7 @@ private:
     void executeBuiltIn(Command &command);
 	void cdCommand(Command &command);
 	void envCommand(Command &command);
+	void exportCommand(Command &command);
 	std::deque<Job> jobs;
 
 public:

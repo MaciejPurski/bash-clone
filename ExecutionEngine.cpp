@@ -24,6 +24,8 @@ void ExecutionEngine::executeBuiltIn(Command &command) {
 			jobs.front().runBackground(true);
 	} else if (command.command == "jobs") {
 		jobsCommand();
+	} else if (command.command == "export") {
+		exportCommand(command);
 	} else {
 		throw std::runtime_error("Unkown built-in");
 	}
@@ -59,6 +61,8 @@ void ExecutionEngine::executeCommandLine(std::vector<Command> commands) {
 	std::vector<Command> pipe;
 
 	for (auto &cmd : commands) {
+		if (cmd.command.empty())
+			continue;
 		/* The built in, which is &-terminated or is a part of a pipe
 		 * shall be ignored
 		 */
@@ -152,5 +156,28 @@ void ExecutionEngine::jobsCleanup() {
 		}
 	}
 
+}
+
+void ExecutionEngine::exportCommand(Command &command) {
+	for (auto &arg : command.args) {
+		/* get variable name */
+		std::string valName;
+		int i = 0;
+
+		while (i < arg.size() && arg[i] != '=') {
+			valName += arg[i++];
+		}
+
+		if (i != arg.size()) {
+			std::string value;
+
+			while (i < arg.size())
+				value += arg[i++];
+
+			environment.setVariable(valName, value);
+		}
+
+		environment.exportVariable(valName);
+	}
 }
 

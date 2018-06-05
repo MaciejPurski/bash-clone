@@ -72,9 +72,9 @@ public:
 
 	bool isBuiltIn() {
 			return command == "cd" || command == "pwd" ||
-			       command == "kill" || command == "env" ||
+			       command == "env" ||
 			       command == "bg" || command == "fg" ||
-			       command == "jobs";
+			       command == "jobs" || command == "export";
 
 	}
 
