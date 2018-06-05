@@ -111,11 +111,13 @@ void ExecutionEngine::cdCommand(Command &command) {
 		throw std::runtime_error("cd command expects one argument");
 	}
 
-	if (!environment.checkIfDirExists(command.args[0])) {
+	std::string expanded = environment.expandPath(command.args[0]);
+
+	if (!environment.checkIfDirExists(expanded)) {
 		throw std::runtime_error("Directory does not exist");
 	}
 
-	environment.setCurrentDir(environment.expandPath(command.args[0]));
+	environment.setCurrentDir(expanded);
 }
 
 void ExecutionEngine::killCommand(Command &command) {

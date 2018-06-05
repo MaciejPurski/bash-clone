@@ -10,7 +10,6 @@ static Terminal *t;
 
 void Terminal::start() {
 	// init script
-	//run(initFile, false);
 
 	if (interactive) {
 		/* Loop until, we are in the foreground */
@@ -37,6 +36,7 @@ void Terminal::start() {
 
 		/* Save default terminal attributes for shell.  */
 		tcgetattr(shellProcessGroup, &shellModes);
+		run(initFile, false);
 		run(std::cin, true);
 	} else {
 		run(scriptFile, false);

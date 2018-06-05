@@ -30,6 +30,5 @@ int main(int argc, char *argv[])
 
 	Terminal t(initName, scriptName);
 	t.start();
-
 	return 0;
 }
