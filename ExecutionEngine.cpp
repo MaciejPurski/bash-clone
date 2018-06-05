@@ -34,13 +34,13 @@ std::string ExecutionEngine::checkCommand(Command &command) {
 	std::string fullPath = environment.resolveCommand(command.command);
 
 	if (access(fullPath.c_str(), F_OK))
-		throw std::runtime_error("File does not exist");
+		throw std::runtime_error("File does not exist: " + fullPath);
 
 	if (access(fullPath.c_str(), R_OK))
-		throw std::runtime_error("User does not have read permission");
+		throw std::runtime_error("User does not have read permission: " + fullPath);
 
 	if (access(fullPath.c_str(), X_OK))
-		throw std::runtime_error("User does not have execute permission");
+		throw std::runtime_error("User does not have execute permission: " + fullPath);
 
 	command.setFullPath(fullPath);
 	return fullPath;
@@ -121,8 +121,12 @@ void ExecutionEngine::showDoneBackgroundJobs() {
 }
 
 void ExecutionEngine::update() {
-	for (auto &job : jobs)
+	for (auto &job : jobs) {
 		job.updateState();
+
+		if (job.isDone() && !job.isBackground())
+			environment.setReturnCode(job.getStatus());
+	}
 }
 
 void ExecutionEngine::jobsCleanup() {

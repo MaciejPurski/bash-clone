@@ -15,7 +15,6 @@ void Shell::start() {
 		signal(SIGTSTP, SIG_IGN);
 		signal(SIGTTIN, SIG_IGN);
 		signal(SIGTTOU, SIG_IGN);
-		signal(SIGCHLD, SIG_IGN);
 
 		/* Our shell should become a new group's leader */
 		if (setpgid(shellProcessGroup, shellProcessGroup) < 0) {

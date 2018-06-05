@@ -26,15 +26,15 @@
  *	especially environmental variables.
  */
 class Environment {
+private:
 
-	enum TypeOfVariable{
+	enum TypeOfVariable {
 		localVariable,
 		globalVariable
 	};
 
 
-	struct EnvironmentVariable
-	{
+	struct EnvironmentVariable {
 		std::string name_;
 		std::string value_;
 		int variableType_;
@@ -69,8 +69,14 @@ class Environment {
 
 	std::unordered_map<std::string, std::unique_ptr<EnvironmentVariable>> variablesMap_;
 	std::string currentDir_;
+	int returnCode;
+public:
+	int getReturnCode() const;
 
-	private:
+	void setReturnCode(int returnCode);
+
+private:
+
 	/**
 	 * @brief Get actual user name by function getpwuid
 	 * @return user name
@@ -161,7 +167,7 @@ class Environment {
 
 	std::string getPathPiece(std::string path);
 
-	public:
+public:
 
 	/**
 	 * @brief Constructor reads ~/.profile and /etc/enviroment to get PATH variables and it use

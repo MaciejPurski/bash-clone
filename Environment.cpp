@@ -173,7 +173,7 @@ std::string Environment::getPathPiece(std::string path) {
 
 Environment::Environment() {
 	loadUserVariable();
-
+	returnCode = 0;
 
 	const char *homeDir = getUserHomeDir();
 	currentDir_ = homeDir;
@@ -342,4 +342,12 @@ std::string Environment::resolveCommand(std::string &command) {
 	}
 
 	return fullPath;
+}
+
+int Environment::getReturnCode() const {
+	return returnCode;
+}
+
+void Environment::setReturnCode(int returnCode) {
+	Environment::returnCode = returnCode;
 }

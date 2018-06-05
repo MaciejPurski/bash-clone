@@ -39,6 +39,7 @@ void Job::start(const Environment &env) {
 		setpgid(pid, pgid);
 	}
 
+	running = commands.size();
 	if (foreground)
 		runForeground(false);
 	else
@@ -162,7 +163,6 @@ void Job::runForeground(bool cont) {
 
 	/* Put the job into the foreground.  */
 	tcsetpgrp(STDIN_FILENO, pgid);
-	running = commands.size();
 	state = Running;
 	foreground = true;
 
@@ -171,29 +171,11 @@ void Job::runForeground(bool cont) {
 	if (cont) {
 		if (kill(-pgid, SIGCONT) < 0)
 			perror ("kill (SIGCONT)");
-
 	}
 
-	int status;
-	pid_t pid;
 	/* Wait for it to report.  */
-	while (state == Running) {
-		pid = waitpid(-pgid, &status, WUNTRACED);
-
-		if (WIFSTOPPED(status)) {
-			running = 0;
-			state = Stopped;
-			foreground = false;
-			std::cout << std::endl;
-			showJob();
-		} else if (WIFSIGNALED(status)) {
-			state = Done;
-		} else {
-			running--;
-			if (running == 0)
-				state = Done;
-		}
-	}
+	while (state == Running)
+		jobWait(WUNTRACED);
 }
 
 void Job::runBackground(bool cont) {
@@ -201,6 +183,7 @@ void Job::runBackground(bool cont) {
 	state = Running;
 
 	std::cout << "[" << number << "] ";
+
 	/* Send the job a continue signal, if necessary.  */
 	if (cont) {
 		std::cout << commandLine + " & ";
@@ -232,10 +215,6 @@ std::string Job::getState() {
 	}
 }
 
-pid_t Job::getPid() {
-	return pgid;
-}
-
 void Job::showJob() {
 	std::cout << "[" << number << "]" << " " << pgid << " " << getState() << " " << commandLine;
 	if (!foreground)
@@ -248,26 +227,7 @@ void Job::updateState() {
 		return;
 
 	if (!foreground) {
-		int status;
-		pid_t pid = waitpid(-pgid, &status, WUNTRACED | WNOHANG);
-
-		/* nothing has happened */
-		if (pid == 0)
-			return;
-
-		// TODO: KILLED
-		if (WIFSTOPPED(status)) {
-			running = 0;
-			state = Stopped;
-			foreground = false;
-		} else if (WIFSIGNALED(status)) {
-			state = Done;
-		} else {
-			running--;
-			// TODO: set returning code
-			if (running == 0)
-				state = Done;
-		}
+		jobWait(WUNTRACED | WNOHANG);
 	}
 }
 
@@ -279,4 +239,39 @@ void Job::setDefaultSignalsHandling() {
 	signal(SIGTTIN, SIG_DFL);
 	signal(SIGTTOU, SIG_DFL);
 	signal(SIGCHLD, SIG_DFL);
+}
+
+int Job::getStatus() {
+	return retStatus;
+}
+
+void Job::jobWait(int flags) {
+	int status;
+	pid_t pid;
+
+	pid = waitpid(-pgid, &status, flags);
+	/* Nothing happened */
+	if (pid == 0)
+		return;
+
+	if (pid < 0 && !(flags & WNOHANG))
+		perror("wait problem");
+
+	if (WIFSTOPPED(status)) {
+		state = Stopped;
+		foreground = false;
+		std::cout << std::endl;
+		showJob();
+	} else {
+		if (WIFSIGNALED(status))
+			running = 0;
+		else
+			running--;
+
+		if (!(flags & WNOHANG))
+			retStatus = WEXITSTATUS(status);
+
+		if (running == 0)
+			state = Done;
+	}
 }
