@@ -60,7 +60,7 @@ Command Parser::createCommand(std::vector<Token> &tokens) {
             if (tokens[it].type == ASSIGNMENT) {
                 command.args.push_back(parseAssignment(tokens, it));
             } else
-                command.command = concatenation(tokens, it);
+                command.args.push_back(concatenation(tokens, it));
         } else {
             command.args.push_back(concatenation(tokens, it));
         }
@@ -83,7 +83,7 @@ bool Parser::checkType(TokenType type, const std::initializer_list<TokenType> &a
     return false;
 }
 
-Command::Redirection Parser::parseRedirection(std::vector<Token> &tokens, int it){
+Command::Redirection Parser::parseRedirection(std::vector<Token> &tokens, int &it){
     std::string::size_type tmp;
     int number;
     std::string sign;
@@ -102,7 +102,7 @@ Command::Redirection Parser::parseRedirection(std::vector<Token> &tokens, int it
     return Command::Redirection(number, sign == "<", sign == ">>", concatenation(tokens, it));
 }
 
-std::string Parser::parseAssignment(std::vector<Token> &tokens, int it) {
+std::string Parser::parseAssignment(std::vector<Token> &tokens, int &it) {
     std::string tmp = tokens[it++].value;
     env.setVariable(tmp, concatenation(tokens, it));
     return tmp;

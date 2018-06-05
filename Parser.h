@@ -69,7 +69,7 @@ private:
      * @param it iterator which shows the location of the current token
 	 * @return created Redirection
 	 */
-    Command::Redirection parseRedirection(std::vector<Token> &tokens, int it);
+    Command::Redirection parseRedirection(std::vector<Token> &tokens, int &it);
 
     /**
 	 * @brief Parses tokens which creates assignment and asks Environment
@@ -78,7 +78,7 @@ private:
      * @param it iterator which shows the location of the current token
 	 * @return name of variable
 	 */
-    std::string parseAssignment(std::vector<Token> &tokens, int it);
+    std::string parseAssignment(std::vector<Token> &tokens, int &it);
 };
 
 

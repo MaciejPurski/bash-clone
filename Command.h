@@ -15,6 +15,13 @@ public:
 																						  endOfFile(endOfFile),
 																						  fileName(fileName) {}
 
+		bool operator==(const Redirection &rhs) const {
+			return index == rhs.index &&
+				   input == rhs.input &&
+				   endOfFile == rhs.endOfFile &&
+				   fileName == rhs.fileName;
+		}
+
 		int index;
 		bool input;
 		bool endOfFile;
@@ -69,6 +76,13 @@ public:
 			       command == "bg" || command == "fg" ||
 			       command == "jobs";
 
+	}
+
+	bool operator==(const Command &rhs) const {
+		return command == rhs.command &&
+			   args == rhs.args &&
+			   redirections == rhs.redirections &&
+			   term == rhs.term;
 	}
 
 };
