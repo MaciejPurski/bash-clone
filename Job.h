@@ -30,7 +30,7 @@ private:
 	int number;
 	int retStatus;
 
-	std::string pipeOpen(std::string src);
+	std::string makePipe(std::string src);
 	void pipeProcess();
 	void changeProcessImage(Command &command, bool foreground, const Environment &env);
 	void handleRedirection(Command::Redirection &redirection);

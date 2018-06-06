@@ -34,7 +34,7 @@ std::string ExecutionEngine::checkCommand(Command &command) {
 	std::string fullPath = environment.resolveCommand(command.command);
 
 	if (access(fullPath.c_str(), F_OK))
-		throw std::runtime_error("File does not exist: " + fullPath);
+		throw std::runtime_error("File does not exist: " + command.command);
 
 	if (access(fullPath.c_str(), R_OK))
 		throw std::runtime_error("User does not have read permission: " + fullPath);

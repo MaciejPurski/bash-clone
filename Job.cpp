@@ -14,21 +14,6 @@ void Job::start(const Environment &env) {
 
 		pid_t pid;
 		if ((pid = fork()) == 0) {
-			for (auto &f : cmd.pipes) {
-				int flags = 0;
-				if (f.input)
-					flags = O_RDONLY;
-				else
-					flags = O_WRONLY;
-				pipesFd.push_back(open(f.fileName.c_str(), flags));
-			}
-
-			chdir(env.getCurrentDir().c_str());
-
-			for (int i = 0; i < pipesFd.size(); i++) {
-				dup2(pipesFd[i], cmd.pipes[i].index);
-			}
-
 			changeProcessImage(cmd, !commands.back().isBackgroud(), env);
 		} else if (pid < 0) {
 			throw std::runtime_error("Problem while forking new process: " + std::string(strerror(errno)));
@@ -56,15 +41,21 @@ void Job::start(const Environment &env) {
 void Job::changeProcessImage(Command &command, bool foreground, const Environment &env) {
 	pid_t pid = getpid();
 
+	chdir(env.getCurrentDir().c_str());
+
 	if (pgid == 0)
 		pgid = pid;
 
 	setpgid(pid, pgid);
 
 	if (foreground)
-		tcsetpgrp(STDIN_FILENO, pid);
+		tcsetpgrp(STDIN_FILENO, pgid);
 
 	for (auto &redirection : command.redirections) {
+		handleRedirection(redirection);
+	}
+
+	for (auto &redirection : command.pipes) {
 		handleRedirection(redirection);
 	}
 
@@ -85,7 +76,7 @@ void Job::handleRedirection(Command::Redirection &redirection) {
 	if (redirection.input) {
 		flags |= O_RDONLY;
 
-		if (redirection.index == 1 || redirection.index == 0) {
+		if (redirection.index == 1 || redirection.index == 2) {
 			throw std::logic_error("Can't redirect decriptor 1 or 2 as input " +
 			                       std::to_string(redirection.index) + ": " + strerror(errno));
 		}
@@ -121,33 +112,33 @@ void Job::handleRedirection(Command::Redirection &redirection) {
  */
 void Job::pipeProcess() {
 	for (int i = 0; i < commands.size() - 1; i++) {
-		std::string pipeName = pipeOpen(commands[i].command);
+		std::string pipeName = makePipe(commands[i].command);
 
 		pipes.push_back(pipeName);
 
 		/* output pipe */
-		commands[i].pipes.push_back(Command::Redirection(1, false, false, pipeName));
+		commands[i].pipes.emplace_back(Command::Redirection(1, false, false, pipeName));
 
 		/* input pipe */
-		commands[i + 1].pipes.push_back(Command::Redirection(0, true, false, pipeName));
+		commands[i + 1].pipes.emplace_back(Command::Redirection(0, true, false, pipeName));
 	}
 }
 
-std::string Job::pipeOpen(std::string src) {
+std::string Job::makePipe(std::string src) {
 	int fd = -1;
 	std::string fifoName;
 
 	srand(time(NULL));
 
-	// in case the file exists, try to generate a new name for it
+	/* in case the file exists, try to generate a new name for it */
 	do {
 		int randomNumber = rand();
 
 		if (fd > 0)
 			close(fd);
 
-		fifoName = "/tmp/" + src + std::to_string(randomNumber);
-	} while (open(fifoName.c_str(), 0) > 0);
+		fifoName = "/tmp/" + std::to_string(randomNumber);
+	} while (access(fifoName.c_str(), F_OK) == 0);
 
 	fd = mknod(fifoName.c_str(), S_IFIFO|0666, 0);
 
@@ -248,7 +239,7 @@ int Job::getStatus() {
 void Job::jobWait(int flags) {
 	int status;
 	pid_t pid;
-
+	
 	pid = waitpid(-pgid, &status, flags);
 	/* Nothing happened */
 	if (pid == 0)
@@ -259,14 +250,10 @@ void Job::jobWait(int flags) {
 
 	if (WIFSTOPPED(status)) {
 		state = Stopped;
-		foreground = false;
 		std::cout << std::endl;
 		showJob();
 	} else {
-		if (WIFSIGNALED(status))
-			running = 0;
-		else
-			running--;
+		running--;
 
 		if (!(flags & WNOHANG))
 			retStatus = WEXITSTATUS(status);
