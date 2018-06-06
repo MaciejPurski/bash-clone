@@ -315,7 +315,10 @@ void Environment::setCurrentDir(const std::string &path) {
 }
 
 std::string Environment::getCurrentDir() const {
-	return currentDir_;
+	if (currentDir_.back() != '/')
+		return currentDir_ + '/';
+	else
+		return currentDir_;
 }
 
 bool Environment::checkIfDirExists(std::string path) const {

@@ -239,7 +239,7 @@ int Job::getStatus() {
 void Job::jobWait(int flags) {
 	int status;
 	pid_t pid;
-	
+
 	pid = waitpid(-pgid, &status, flags);
 	/* Nothing happened */
 	if (pid == 0)

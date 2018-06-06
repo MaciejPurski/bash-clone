@@ -46,6 +46,7 @@ void Shell::run(std::istream &input, bool interactiveMode) {
 		} catch (std::exception &e) {
 			// TODO: exceptions
 			std::cerr << e.what() << std::endl;
+			env.setReturnCode(127);
 		}
 	}
 

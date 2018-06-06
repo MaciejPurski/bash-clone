@@ -10,7 +10,7 @@ add_executable(environmentTest
         tests/environment-tests.cpp Environment.h Environment.cpp BashExceptions.h)
 
 add_executable(engineTest
-        tests/engine-tests.cpp ExecutionEngine.h ExecutionEngine.cpp Interpreter.h Interpreter.cpp BashExceptions.h )
+        tests/engine-tests.cpp ExecutionEngine.h ExecutionEngine.cpp BashExceptions.h Environment.cpp Job.cpp )
 
 add_executable(interpreterTest
         tests/interpreter-tests.cpp Interpreter.h Interpreter.cpp BashExceptions.h Lexer.h Lexer.cpp Parser.h Parser.cpp Environment.h Environment.cpp Token.h )

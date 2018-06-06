@@ -87,7 +87,7 @@ void ExecutionEngine::cdCommand(Command &command) {
 	std::string expanded = environment.expandPath(command.args[0]);
 
 	if (!environment.checkIfDirExists(expanded)) {
-		throw std::runtime_error("Directory does not exist");
+		throw std::runtime_error("Directory does not exist: " + command.args[0]);
 	}
 
 	environment.setCurrentDir(expanded);
@@ -171,5 +171,6 @@ void ExecutionEngine::addJob(std::vector<Command> &pipe) {
 
 	jobs.push_front(Job(pipe, nextJobNumber++));
 	jobs.front().start(environment);
+	environment.setReturnCode(jobs.front().getStatus());
 }
 
