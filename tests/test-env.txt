@@ -1,8 +1,5 @@
+PATH==/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 a==abcd
 USER=maciej
 PWD=/home/maciej/studia/UXP/bash-clone/tests/
 HOME=/home/maciej
-iej
-a==abcd
-USER=maciej
-USER=maciej

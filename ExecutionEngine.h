@@ -73,6 +73,8 @@ public:
 	 * @brief Remove done jobs
 	 */
 	void jobsCleanup();
+
+	int getNJobs();
 };
 
 

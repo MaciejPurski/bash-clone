@@ -174,3 +174,7 @@ void ExecutionEngine::addJob(std::vector<Command> &pipe) {
 	environment.setReturnCode(jobs.front().getStatus());
 }
 
+int ExecutionEngine::getNJobs() {
+	return jobs.size();
+}
+

@@ -33,18 +33,18 @@ std::string Engine::currentDir;
 BOOST_TEST_GLOBAL_FIXTURE( Engine );
 
 BOOST_AUTO_TEST_SUITE( ENGINE_TEST_SUITE)
-BOOST_AUTO_TEST_CASE(change_dir_to_current)
-{
+	BOOST_AUTO_TEST_CASE(change_dir_to_current)
+	{
 
-	Command cmd;
-	cmd.command = "cd";
-	cmd.args.push_back(Engine::currentDir);
+		Command cmd;
+		cmd.command = "cd";
+		cmd.args.push_back(Engine::currentDir);
 
-	std::vector<Command> commandLine({cmd});
-	Engine::engine.executeCommandLine(commandLine);
+		std::vector<Command> commandLine({cmd});
+		Engine::engine.executeCommandLine(commandLine);
 
-	BOOST_CHECK_EQUAL(Engine::env.getCurrentDir(), Engine::currentDir + '/');
-}
+		BOOST_CHECK_EQUAL(Engine::env.getCurrentDir(), Engine::currentDir + '/');
+	}
 
 	BOOST_AUTO_TEST_CASE(change_dir_to_tests)
 	{
@@ -171,6 +171,23 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 
 		BOOST_CHECK_EQUAL( Engine::env.getReturnCode(), 0 );
 
+	BOOST_AUTO_TEST_CASE(export_path_test)
+	{
+		std::vector<Command> commandLine;
+		Command exp;
+
+		exp.command = "export";
+		exp.args.push_back("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games");
+		exp.term = Command::TERM;
+		commandLine.push_back(exp);
+
+		Command cmd;
+		cmd.command = "./env-test";
+		cmd.redirections.emplace_back(Command::Redirection(1, false, false, "test-env.txt"));
+		commandLine.push_back(cmd);
+
+		Engine::engine.executeCommandLine(commandLine);
+
 		std::ifstream in;
 		in.open("../tests/test-env.txt");
 
@@ -188,17 +205,10 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		in.close();
 	}
 
-	BOOST_AUTO_TEST_CASE(export_path_test)
+	BOOST_AUTO_TEST_CASE(test_ls_command)
 	{
-		std::vector<Command> commandLine;
-		Command exp;
-
-		exp.command = "export";
-		exp.args.push_back("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games");
-		exp.term = Command::TERM;
-		commandLine.push_back(exp);
-
 		Command cmd;
+		std::vector<Command> commandLine;
 		cmd.command = "ls";
 		cmd.redirections.push_back(Command::Redirection(1, false, false, "/dev/null"));
 		commandLine.push_back(cmd);
@@ -206,6 +216,8 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		Engine::engine.executeCommandLine(commandLine);
 		BOOST_CHECK_EQUAL(Engine::env.getReturnCode(), 0);
 	}
+
+
 
 	BOOST_AUTO_TEST_CASE(unknown_command_test)
 	{
@@ -235,7 +247,44 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		cat.command = "cat";
 		cat.redirections.push_back(Command::Redirection(0, true, false, "abc.txt"));
 		cat.redirections.push_back(Command::Redirection(1, false, false, "abc2.txt"));
+		cat.term = Command::AMPER;
 		commandLine.push_back(cat);
+		Engine::engine.executeCommandLine(commandLine);
+
+		while (Engine::engine.getNJobs() != 0) {
+			Engine::engine.update();
+			Engine::engine.jobsCleanup();
+		}
+		std::ifstream in;
+		in.open("../tests/abc2.txt");
+
+		BOOST_CHECK_EQUAL( in.is_open(), true );
+
+		std::string line;
+
+		std::getline(in, line);
+		in.close();
+		BOOST_CHECK_EQUAL(line, "abc");
+	}
+
+
+	BOOST_AUTO_TEST_CASE(input_redirection_background_test)
+	{
+		std::vector<Command> commandLine;
+
+		Command ech;
+		ech.command = "echo";
+		ech.args.push_back("abc");
+		ech.redirections.push_back(Command::Redirection(1, false, false, "abc.txt"));
+		ech.term = Command::TERM;
+		commandLine.push_back(ech);
+
+		Command cat;
+		cat.command = "cat";
+		cat.redirections.push_back(Command::Redirection(0, true, false, "abc.txt"));
+		cat.redirections.push_back(Command::Redirection(1, false, false, "abc2.txt"));
+		commandLine.push_back(cat);
+
 		Engine::engine.executeCommandLine(commandLine);
 
 		std::ifstream in;
@@ -249,5 +298,6 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		in.close();
 		BOOST_CHECK_EQUAL(line, "abc");
 	}
+
 
 BOOST_AUTO_TEST_SUITE_END()

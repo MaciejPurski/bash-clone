@@ -4,6 +4,7 @@
 #include "../Interpreter.h"
 #include "../BashExceptions.h"
 
+BOOST_AUTO_TEST_SUITE( INTERPRETER_TEST_SUITE)
 BOOST_AUTO_TEST_CASE( separateTokens1 )
 {
     Lexer lexer;
@@ -183,3 +184,4 @@ BOOST_AUTO_TEST_CASE( parser5 )
     BOOST_CHECK(parser.separateCommands(tokens) == commands);
 }
 
+BOOST_AUTO_TEST_SUITE_END()

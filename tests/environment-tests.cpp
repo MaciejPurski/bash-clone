@@ -4,6 +4,7 @@
 #include "../Environment.h"
 #include "../BashExceptions.h"
 
+BOOST_AUTO_TEST_SUITE( ENVIRONMENT_TEST_SUITE)
 BOOST_AUTO_TEST_CASE( SetVatiableTest )
 {
 	Environment env;
@@ -56,7 +57,7 @@ BOOST_AUTO_TEST_CASE(HomeVariable)
 BOOST_AUTO_TEST_CASE(SleepCheck)
 {
 	Environment env;
-	std::string sleepPath = "/bin/sleep";
+	std::string sleepPath = "/bin//sleep";
 	env.setVariable("PATH", "/bin/:");
 
 	BOOST_CHECK_EQUAL(sleepPath, env.searchPath("sleep"));
@@ -68,7 +69,6 @@ BOOST_AUTO_TEST_CASE(IfSearchPathCannotFindSomethingThatNotExists)
 	std::string programName = "This is the program with long name. It can't exist. We are on a mission from God!";
 	BOOST_CHECK_EQUAL(env.searchPath(programName), "");
 }
-
 
 BOOST_AUTO_TEST_CASE(ExpandPath1)
 {
@@ -83,3 +83,33 @@ BOOST_AUTO_TEST_CASE(ExpandPath1)
 
 	BOOST_CHECK_EQUAL(tmp1, tmp2);
 }
+
+BOOST_AUTO_TEST_CASE(ExpandPath2)
+{
+	Environment env;
+	uid_t uid = geteuid();
+	struct passwd *pw = getpwuid(uid);
+	char * homeDir =  pw->pw_dir;
+
+	std::string tmp1(homeDir);
+	tmp1 += "/";
+	std::string tmp2 = env.expandPath("~");
+
+	BOOST_CHECK_EQUAL(tmp1, tmp2);
+}
+
+BOOST_AUTO_TEST_CASE(ExpandPath3)
+{
+	Environment env;
+	uid_t uid = geteuid();
+	struct passwd *pw = getpwuid(uid);
+	char * homeDir =  pw->pw_dir;
+
+	std::string tmp1(homeDir);
+	tmp1 += "/";
+	std::string tmp2 = env.expandPath("../" + std::string(pw->pw_name));
+
+	BOOST_CHECK_EQUAL(tmp1, tmp2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
