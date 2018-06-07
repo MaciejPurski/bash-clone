@@ -151,8 +151,7 @@ BOOST_AUTO_TEST_SUITE( ENGINE_TEST_SUITE)
 	}
 
 
-	BOOST_AUTO_TEST_CASE(env_test_add)
-	{
+	BOOST_AUTO_TEST_CASE(env_test_add) {
 		std::vector<Command> commandLine;
 		Command exp;
 
@@ -169,7 +168,8 @@ BOOST_AUTO_TEST_SUITE( ENGINE_TEST_SUITE)
 
 		Engine::engine.executeCommandLine(commandLine);
 
-		BOOST_CHECK_EQUAL( Engine::env.getReturnCode(), 0 );
+		BOOST_CHECK_EQUAL(Engine::env.getReturnCode(), 0);
+	}
 
 	BOOST_AUTO_TEST_CASE(export_path_test)
 	{
