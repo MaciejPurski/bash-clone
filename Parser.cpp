@@ -30,7 +30,7 @@ std::vector<std::vector<Token>> Parser::syntaxAnalyse(std::vector<Token> &tokens
                 instruction.push_back(tokens[it++]);
                 if (tokens[it].type == SPACE)
                     it++;
-                if (!checkType(tokens[it].type, {WORD, QUOTATION, SPACE, ASSIGNMENT, WITH$})) {
+                if (!checkType(tokens[it].type, {WORD, QUOTATION, SPACE, ASSIGNMENT, VARIABLE})) {
                     throw (InterpreterException("Syntax error:" + tokens[it].value + "unexpected"));
                 }
             }
@@ -110,8 +110,8 @@ std::string Parser::parseAssignment(std::vector<Token> &tokens, int &it) {
 
 std::string Parser::concatenation(std::vector<Token> &tokens, int &it) {
     std::string tmp;
-    while (checkType(tokens[it].type, {WORD, QUOTATION, ASSIGNMENT, WITH$})) {
-        if (tokens[it].type == WITH$) {
+    while (checkType(tokens[it].type, {WORD, QUOTATION, ASSIGNMENT, VARIABLE})) {
+        if (tokens[it].type == VARIABLE) {
             tmp += env.getValue(tokens[it].value);
         } else if (tokens[it].type == ASSIGNMENT) {
             tmp += tokens[it].value + "=";

@@ -56,11 +56,11 @@ std::vector<Token> Lexer::separateTokens(std::string &line) {
                 tokens.emplace_back(REDIRECTION, bufor);
             } else if (bufor.empty() && line[it] == '$') {
                 it++;
-                while (!checkSign(line[it], {'|', '&', ';', '\'', '$', '<', '>', '='}) && !isspace(line[it]) &&
+                while (!checkSign(line[it], {'|', '&', ';', '\'', '$', '<', '>', '=', '/', ':', '{', '}', '@'}) && !isspace(line[it]) &&
                        it < line.size()) {
                     bufor.push_back(line[it++]);
                 }
-                tokens.emplace_back(WITH$, bufor);
+                tokens.emplace_back(VARIABLE, bufor);
             } else {
                 while (!checkSign(line[it], {'|', '&', ';', '\'', '$', '<', '>'}) && !isspace(line[it]) && it < line.size()) {
                     if (line[it] == '=')

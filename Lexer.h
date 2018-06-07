@@ -21,7 +21,6 @@ public:
     std::vector<Token> separateTokens(std::string &line);
 
 private:
-
     /**
 	 * @brief Checks if sign is on list of signs, used to check if the sign
      * is one of the given signs
