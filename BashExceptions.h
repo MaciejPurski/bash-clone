@@ -66,7 +66,17 @@ public:
 
 	EngineException(const std::string&msg ="")
 	{
-		msg_ = "Engine exception! Message: "+ msg;
+		msg_ = "Engine exception: "+ msg;
+	}
+};
+
+class ChildProcessException : public BashCloneException
+{
+public:
+
+	ChildProcessException(const std::string&msg ="")
+	{
+		msg_ = "Child process exception:"+ msg;
 	}
 };
 

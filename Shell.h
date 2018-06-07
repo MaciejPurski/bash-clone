@@ -53,12 +53,12 @@ public:
 
 		initFile.open(initFilename);
 		if (!initFile)
-			throw std::runtime_error("Can't open file: " + initFilename);
+			throw EngineException("Can't open file: " + initFilename);
 
 		if (!scriptFilename.empty()) {
 			scriptFile.open(scriptFilename);
 			if (!scriptFile)
-				throw std::runtime_error("Can't open file: " + initFilename);
+				throw EngineException("Can't open file: " + initFilename);
 			interactive = false;
 		} else {
 			interactive = true;

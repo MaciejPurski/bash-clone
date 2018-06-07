@@ -26,7 +26,7 @@ void ExecutionEngine::executeBuiltIn(Command &command) {
 	} else if (command.command == "export") {
 		exportCommand(command);
 	} else {
-		throw std::runtime_error("Unkown built-in");
+		throw EngineException("Unkown built-in");
 	}
 }
 
@@ -34,13 +34,13 @@ std::string ExecutionEngine::checkCommand(Command &command) {
 	std::string fullPath = environment.resolveCommand(command.command);
 
 	if (access(fullPath.c_str(), F_OK))
-		throw std::runtime_error("File does not exist: " + command.command);
+		throw EngineException("File does not exist: " + command.command);
 
 	if (access(fullPath.c_str(), R_OK))
-		throw std::runtime_error("User does not have read permission: " + fullPath);
+		throw EngineException("User does not have read permission: " + fullPath);
 
 	if (access(fullPath.c_str(), X_OK))
-		throw std::runtime_error("User does not have execute permission: " + fullPath);
+		throw EngineException("User does not have execute permission: " + fullPath);
 
 	command.setFullPath(fullPath);
 	return fullPath;
@@ -81,13 +81,13 @@ void ExecutionEngine::cdCommand(Command &command) {
 		return;
 	}
 	if (command.args.size() > 1) {
-		throw std::runtime_error("cd command expects one argument");
+		throw EngineException("cd command expects one argument");
 	}
 
 	std::string expanded = environment.expandPath(command.args[0]);
 
 	if (!environment.checkIfDirExists(expanded)) {
-		throw std::runtime_error("Directory does not exist: " + command.args[0]);
+		throw EngineException("Directory does not exist: " + command.args[0]);
 	}
 
 	environment.setCurrentDir(expanded);

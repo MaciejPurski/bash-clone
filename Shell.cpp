@@ -18,7 +18,7 @@ void Shell::start() {
 
 		/* Our shell should become a new group's leader */
 		if (setpgid(shellProcessGroup, shellProcessGroup) < 0) {
-			throw std::runtime_error("Can't change process group");
+			throw EngineException("Can't change process group");
 		}
 
 		/* Set our new group to be the foreground group of the terminal */
@@ -40,13 +40,14 @@ void Shell::run(std::istream &input, bool interactiveMode) {
 			std::vector<Command> commands = interpreter.processCommandLine(line);
 			engine.executeCommandLine(commands);
 			tcsetpgrp(STDIN_FILENO, shellProcessGroup);
-		} catch (std::logic_error &e) {
-			std::cerr << "Process error: " << e.what() << std::endl;
+		} catch (ChildProcessException &e) {
 			exit(1);
-		} catch (std::exception &e) {
-			// TODO: exceptions
+		} catch (EngineException &e) {
 			std::cerr << e.what() << std::endl;
 			env.setReturnCode(127);
+		} catch (std::exception &e) {
+			std::cerr << "Unexpected exception: " << e.what() << "\nExiting...";
+			exit(1);
 		}
 	}
 

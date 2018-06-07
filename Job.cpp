@@ -16,7 +16,7 @@ void Job::start(const Environment &env) {
 		if ((pid = fork()) == 0) {
 			changeProcessImage(cmd, !commands.back().isBackgroud(), env);
 		} else if (pid < 0) {
-			throw std::runtime_error("Problem while forking new process: " + std::string(strerror(errno)));
+			throw EngineException("Problem while forking new process: " + std::string(strerror(errno)));
 		}
 
 		if (pgid == 0)
@@ -67,7 +67,7 @@ void Job::changeProcessImage(Command &command, bool foreground, const Environmen
 
 	// If exec fails, we need to exit the process
 	// TODO: different exeptions
-	throw std::logic_error("Error executing new process: " + command.command + ": " + strerror(errno));
+	throw ChildProcessException("Error executing new process: " + command.command + ": " + strerror(errno));
 }
 
 void Job::handleRedirection(Command::Redirection &redirection) {
@@ -77,7 +77,7 @@ void Job::handleRedirection(Command::Redirection &redirection) {
 		flags |= O_RDONLY;
 
 		if (redirection.index == 1 || redirection.index == 2) {
-			throw std::logic_error("Can't redirect decriptor 1 or 2 as input " +
+			throw ChildProcessException("Can't redirect decriptor 1 or 2 as input " +
 			                       std::to_string(redirection.index) + ": " + strerror(errno));
 		}
 
@@ -85,7 +85,7 @@ void Job::handleRedirection(Command::Redirection &redirection) {
 		flags |= O_WRONLY;
 
 		if (redirection.index == 0) {
-			throw std::logic_error("Can't redirect decriptor 0 as output " +
+			throw ChildProcessException("Can't redirect decriptor 0 as output " +
 			                       std::to_string(redirection.index) + ": " + strerror(errno));
 		}
 
@@ -97,12 +97,12 @@ void Job::handleRedirection(Command::Redirection &redirection) {
 	int fd = open(redirection.fileName.c_str(), flags, S_IRUSR | S_IWUSR);
 
 	if (fd < 0) {
-		throw std::logic_error("Problem opening file: " + redirection.fileName + ": " + strerror(errno));
+		throw ChildProcessException("Problem opening file: " + redirection.fileName + ": " + strerror(errno));
 	}
 
 	int ret = dup2(fd, redirection.index);
 	if (ret < 0) {
-		throw std::logic_error("Problem redirecting file descriptor nr: " +
+		throw ChildProcessException("Problem redirecting file descriptor nr: " +
 		                       std::to_string(redirection.index) + ": " + strerror(errno));
 	}
 }
@@ -143,7 +143,7 @@ std::string Job::makePipe(std::string src) {
 	fd = mknod(fifoName.c_str(), S_IFIFO|0666, 0);
 
 	if (fd < 0)
-		throw std::runtime_error("Can't create fifo: " + std::string(strerror(errno)));
+		throw EngineException("Can't create fifo: " + std::string(strerror(errno)));
 
 	return fifoName;
 }

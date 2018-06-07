@@ -365,7 +365,7 @@ std::string Environment::resolveCommand(std::string &command) {
 	} else {
 		fullPath = searchPath(command);
 		if (fullPath.empty())
-			throw UnknownCommand("Program name: " + command);
+			throw EngineException("Unkown command: " + command);
 	}
 
 	return fullPath;
