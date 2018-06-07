@@ -10,28 +10,23 @@ protected:
 
 public:
 
-	BashCloneException(const std::string&msg )
-		 	:msg_(msg)
-	{}
+	BashCloneException(const std::string &msg = "")
+	{
+		msg_ = "BashClone exception! Message: "+ msg;
+	}
 
 	virtual const char* what() const noexcept override
 	{
-		std::string tmp = "BashClone exception! Message: "+ msg_;
-		return tmp.c_str();
+		return msg_.c_str();
 	}
 };
 
 class EnvironmentException : public BashCloneException
 {
 public:
-	EnvironmentException(const std::string&msg )
-			:BashCloneException(msg)
-	{}
-
-	virtual const char* what() const noexcept override
+	EnvironmentException(const std::string& msg = "")
 	{
-		std::string tmp = "Environment exception! Message: "+ msg_;
-		return tmp.c_str();
+		msg_= "Environment exception! Message: "+ msg;
 	}
 };
 
@@ -39,117 +34,60 @@ class EmptyPath : public EnvironmentException
 {
 public:
 	EmptyPath(const std::string&msg )
-			:EnvironmentException(msg)
-	{}
-
-	virtual const char* what() const noexcept override
 	{
-		std::string tmp = "Empty path given! Message: "+ msg_;
-		return tmp.c_str();
+		msg_ = "Empty path given! Message: "+ msg;
 	}
+
+};
+
+class UnknownCommand : public EnvironmentException
+{
+public:
+	UnknownCommand(const std::string&msg)
+	{
+		msg_ = "Unknown command! Message: "+msg;
+	}
+
 };
 
 class UnknownProgram : public EnvironmentException
 {
 public:
 	UnknownProgram(const std::string&msg )
-			:EnvironmentException(msg)
-	{}
-
-	virtual const char* what() const noexcept override
 	{
-		std::string tmp = "Unknown program! Message: "+ msg_;
-		return tmp.c_str();
+		msg_ = "Unknown program! Message: "+ msg;
 	}
 };
 
-class MissingProfileFile : public EnvironmentException
-{
-public:
-	MissingProfileFile()
-		:EnvironmentException("")
-	{}
-
-	virtual const char* what() const noexcept override
-	{
-		std::string tmp = "Missing profile file!";
-		return tmp.c_str();
-	}
-};
-
-class ErrorInProfile : public EnvironmentException
-{
-public:
-	ErrorInProfile(const std::string&msg )
-			:EnvironmentException(msg)
-	{}
-
-	virtual const char * what() const noexcept override
-	{
-		std::string tmp = "Error in profile! Message: " + msg_;
-		return tmp.c_str();
-	}
-};
-
-class MissingPathEnvInProfile : public EnvironmentException
-{
-public:
-	MissingPathEnvInProfile()
-			:EnvironmentException("")
-	{}
-
-	virtual const char* what() const noexcept override
-	{
-		return std::string("Missing $PATH env in profile!").c_str();
-	}
-};
 
 class EngineException : public BashCloneException
 {
 public:
 
-	EngineException(const std::string&msg )
-			:BashCloneException(msg)
-	{}
-
-	virtual const char* what() const noexcept override
+	EngineException(const std::string&msg ="")
 	{
-		std::string tmp = "Engine exception! Message: "+ msg_;
-		return tmp.c_str();
+		msg_ = "Engine exception! Message: "+ msg;
 	}
-
 };
 
 class InterpreterException : public BashCloneException
 {
 public:
 
-	InterpreterException(const std::string&msg )
-			:BashCloneException(msg)
-	{}
-
-	virtual const char* what() const noexcept override
+	InterpreterException(const std::string&msg ="")
 	{
-		std::string tmp = "Interpreter exception! Message: "+ msg_;
-		return tmp.c_str();
+		msg_ = "Interpreter exception! Message: "+ msg;
 	}
-
 };
 
 class TerminalException :public BashCloneException
 {
 public:
 
-	TerminalException(const std::string&msg )
-			:BashCloneException(msg)
-	{}
-
-	virtual const char* what() const noexcept override
+	TerminalException(const std::string&msg ="")
 	{
-		std::string tmp = "Shell exception! Message: "+ msg_;
-		return tmp.c_str();
+		msg_ = "Shell exception! Message: "+ msg;
 	}
-
 };
 
 #endif //BASH_CLONE_BASHEXCEPTIONS_H

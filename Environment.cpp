@@ -25,17 +25,17 @@ const char *Environment::getUserHomeDir() {
 void Environment::loadUserVariable() {
 	const char *userName = getUserName();
 
-	variablesMap_.insert(std::make_pair(std::string("USER"), std::make_unique<EnvironmentVariable>(
+	variablesMap_.insert(std::make_pair(std::string("USER"), new EnvironmentVariable(
 			"USER", std::string(userName), globalVariable)));
 }
 
 void Environment::loadHomeVariable() {
 	const char *homeDir = getUserHomeDir();
 
-	variablesMap_.insert(std::make_pair(std::string("HOME"), std::make_unique<EnvironmentVariable>(
+	variablesMap_.insert(std::make_pair(std::string("HOME"), new EnvironmentVariable(
 			"HOME", std::string(homeDir), globalVariable)));
 
-	variablesMap_.insert(std::make_pair(std::string("PWD"), std::make_unique<EnvironmentVariable>(
+	variablesMap_.insert(std::make_pair(std::string("PWD"), new EnvironmentVariable(
 			"PWD", std::string(homeDir), globalVariable)));
 }
 
@@ -60,15 +60,7 @@ bool Environment::isLocalVariable(const std::string &name) const {
 
 }
 
-int Environment::countGlobalVariables() const {
-	int n = 0;
-	for (auto &var : variablesMap_) {
-		if (var.second->isGlobal())
-			n++;
-	}
 
-	return n;
-}
 
 std::vector<std::string> Environment::getPathPieces() {
 	unsigned int index = 0;
@@ -171,8 +163,37 @@ std::string Environment::getPathPiece(std::string path) {
 	return tmp;
 }
 
+int Environment::countGlobalVariables() const {
+	int n = 0;
+	for (auto &var : variablesMap_) {
+		if (var.second->isGlobal())
+			n++;
+	}
+
+	return n;
+}
+
+std::string Environment::cutPath(std::string name) {
+	int index = 0;
+	if (name.length() <= 1)
+		return "";
+
+	for (index = 1; index < name.length(); ++index) {
+		if (name[index] == '/')
+			break;
+	}
+
+	if (index == name.length())
+		return "";
+	else
+		return name.substr(index, name.length());
+}
+
 Environment::Environment() {
 	loadUserVariable();
+
+	loadHomeVariable();
+
 	returnCode = 0;
 
 	const char *homeDir = getUserHomeDir();
@@ -180,7 +201,9 @@ Environment::Environment() {
 }
 
 Environment::~Environment() {
-	variablesMap_.clear();
+	for (auto &it : variablesMap_) {
+		delete it.second;
+	}
 }
 
 void Environment::setVariable(const std::string &name, const std::string &value) {
@@ -189,12 +212,16 @@ void Environment::setVariable(const std::string &name, const std::string &value)
 	if (it != variablesMap_.end()) {
 		it->second->setValue(value);
 	} else {
-		variablesMap_.insert(std::make_pair(name, std::unique_ptr<EnvironmentVariable>(
-				new EnvironmentVariable(name, value, localVariable))));
+		variablesMap_.insert(std::make_pair(name, new EnvironmentVariable(
+				EnvironmentVariable(name, value, localVariable))));
 	}
 }
 
 std::string Environment::getValue(const std::string &name) const {
+
+	if(name=="?")
+		return std::to_string(getReturnCode());
+
 	auto it = variablesMap_.find(name);
 
 	if (it != variablesMap_.end())
@@ -229,21 +256,6 @@ char **Environment::getEnvironment() const {
 	return tmp;
 }
 
-std::string cutPath(std::string name) {
-	int index = 0;
-	if (name.length() <= 1)
-		return "";
-
-	for (index = 1; index < name.length(); ++index) {
-		if (name[index] == '/')
-			break;
-	}
-
-	if (index == name.length())
-		return "";
-	else
-		return name.substr(index, name.length());
-}
 
 std::string Environment::expandPath(const std::string &name) {
 	if (name.empty()) {
@@ -253,14 +265,21 @@ std::string Environment::expandPath(const std::string &name) {
 	std::string tmp = name;
 	std::string toReturn = "/";
 
-	if (tmp[0] == '~') {
-		tmp = getValue("HOME") + "/" + tmp.substr(1, tmp.length());
-	} else if (tmp[0] == '.') {
-		tmp = currentDir_ + "/" + tmp.substr(1, tmp.length());
-	} else if (tmp[0] == '.' && tmp[1] == '.') {
+	if(tmp[0] == '~')
+	{
+		tmp = getValue("HOME")+"/"+tmp.substr(1, tmp.length());
+	}
+	else if(name.length()>=2 && (tmp[0] == '.' && tmp[1] == '.'))
+	{
+		tmp = currentDir_+"/"+tmp.substr(0, tmp.length());
+	}
+	else if(tmp[0] == '.')
+	{
 		tmp = getParentDir(currentDir_) + "/" + tmp.substr(2, tmp.length());
-	} else if (tmp[0] != '/') {
-		tmp = currentDir_ + "/" + tmp;
+	}
+	else if(tmp[0] != '/')
+	{
+		tmp = currentDir_+"/"+tmp;
 	}
 
 	while (!tmp.empty()) {
@@ -289,9 +308,12 @@ std::string Environment::expandPath(const std::string &name) {
 	}
 
 
-	if (checkIfDirExists(toReturn))
+	if (checkIfDirExists(toReturn)) {
+		if(toReturn == "//")
+			return "/";
 		return toReturn;
-	else
+	}
+		else
 		return toReturn.substr(0, toReturn.length() - 1);
 
 }
@@ -312,6 +334,8 @@ std::string Environment::searchPath(const std::string &name) {
 
 void Environment::setCurrentDir(const std::string &path) {
 	currentDir_ = path;
+
+	setVariable("PWD", path);
 }
 
 std::string Environment::getCurrentDir() const {
@@ -341,7 +365,7 @@ std::string Environment::resolveCommand(std::string &command) {
 	} else {
 		fullPath = searchPath(command);
 		if (fullPath.empty())
-			throw std::runtime_error("Can't find command: " + command);
+			throw UnknownCommand("Program name: " + command);
 	}
 
 	return fullPath;

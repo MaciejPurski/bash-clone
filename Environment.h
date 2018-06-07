@@ -25,6 +25,7 @@
  *	@brief Used by other classes to access environmental data,
  *	especially environmental variables.
  */
+
 class Environment {
 private:
 
@@ -32,7 +33,6 @@ private:
 		localVariable,
 		globalVariable
 	};
-
 
 	struct EnvironmentVariable {
 		std::string name_;
@@ -67,9 +67,10 @@ private:
 		}
 	};
 
-	std::unordered_map<std::string, std::unique_ptr<EnvironmentVariable>> variablesMap_;
+	std::unordered_map<std::string, EnvironmentVariable*> variablesMap_;
 	std::string currentDir_;
 	int returnCode;
+
 private:
 
 	/**
@@ -93,7 +94,7 @@ private:
 	void loadUserVariable();
 
 	/**
-	 * @brief Insert into variables map "HOME" env variable
+	 * @brief Insert into variables map "HOME" and "PWD" env variable
 	 */
 
 	void loadHomeVariable();
@@ -161,6 +162,22 @@ private:
 	 */
 
 	std::string getPathPiece(std::string path);
+
+	/**
+	 * @brief Counts the number of global variables in variablesMap.
+	 * @return number of global variables
+	 */
+
+
+	int countGlobalVariables() const;
+
+	/**
+	 * @brief Function cuts the first from left dir path. Name must(!) start with "/"!
+	 * @param name path to cut
+	 * @return cut path
+	 */
+
+	std::string cutPath(std::string name);
 
 public:
 	/**
@@ -239,11 +256,6 @@ public:
 
 	std::string searchPath(const std::string &name);
 
-	const std::unordered_map<std::string, std::unique_ptr<EnvironmentVariable>>
-	&getVariables() {
-		return this->variablesMap_;
-	};
-
 	/**
 	 * @brief Change current dir to given argument.
 	 * @param path new current dir path
@@ -266,11 +278,25 @@ public:
 
 	bool checkIfDirExists(std::string path) const;
 
-	int countGlobalVariables() const;
+	/**
+	 * @brief Check if exist command with given name.
+	 * @param command name of command
+	 * @return true if exist, false if not exist
+	 */
 
 	std::string resolveCommand(std::string &command);
 
+	/**
+	 * @brief Get the value of return value from last program
+	 * @return return value of last program
+	 */
+
 	int getReturnCode() const;
+
+	/**
+	 * @brief Set the value of return value from last program
+	 * @param returnCode value to set
+	 */
 
 	void setReturnCode(int returnCode);
 };
