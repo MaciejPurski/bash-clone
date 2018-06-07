@@ -1,0 +1,12 @@
+a==abcd
+USER=maciej
+iej
+a==abcd
+USER=maciej
+USER=maciej
+a==abcd
+USER=maciej
+USER=maciej
+a==abcd
+USER=maciej
+USER=maciej

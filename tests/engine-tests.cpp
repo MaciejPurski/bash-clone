@@ -26,11 +26,9 @@ struct Engine
 
 };
 
-
 Environment Engine::env;
 ExecutionEngine Engine::engine(env);
 std::string Engine::currentDir;
-
 
 BOOST_TEST_GLOBAL_FIXTURE( Engine );
 
@@ -229,6 +227,49 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		commandLine.push_back(cmd);
 
 		BOOST_CHECK_THROW(Engine::engine.executeCommandLine(commandLine), std::exception);
+	}
+
+
+	BOOST_AUTO_TEST_CASE(wrong_redirection_test)
+	{
+		std::vector<Command> commandLine;
+
+		Command cmd;
+		cmd.command = "ls";
+		cmd.redirections.push_back(Command::Redirection(0, false, false, "abc.txt"));
+		commandLine.push_back(cmd);
+
+		BOOST_CHECK_THROW(Engine::engine.executeCommandLine(commandLine), std::exception);
+	}
+
+	BOOST_AUTO_TEST_CASE(input_redirection_test)
+	{
+		std::vector<Command> commandLine;
+
+		Command ech;
+		ech.command = "echo";
+		ech.args.push_back("abc");
+		ech.redirections.push_back(Command::Redirection(1, false, false, "abc.txt"));
+		ech.term = Command::TERM;
+		commandLine.push_back(ech);
+
+		Command cat;
+		cat.command = "cat";
+		cat.redirections.push_back(Command::Redirection(0, true, false, "abc.txt"));
+		cat.redirections.push_back(Command::Redirection(1, false, false, "abc2.txt"));
+		commandLine.push_back(cat);
+		Engine::engine.executeCommandLine(commandLine);
+
+		std::ifstream in;
+		in.open("../tests/abc2.txt");
+
+		BOOST_CHECK_EQUAL( in.is_open(), true );
+
+		std::string line;
+
+		std::getline(in, line);
+		in.close();
+		BOOST_CHECK_EQUAL(line, "abc");
 	}
 
 BOOST_AUTO_TEST_SUITE_END()

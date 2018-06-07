@@ -10,7 +10,7 @@
 enum State {Stopped, Running, Done};
 
 /**
- * @class Jobs
+ * @class Job
  *
  * @brief An abstraction for a pipeline
  *
