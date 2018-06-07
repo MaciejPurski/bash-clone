@@ -57,6 +57,7 @@ BOOST_AUTO_TEST_CASE(SleepCheck)
 {
 	Environment env;
 	std::string sleepPath = "/bin/sleep";
+	env.setVariable("PATH", "/bin/:");
 
 	BOOST_CHECK_EQUAL(sleepPath, env.searchPath("sleep"));
 }
@@ -65,7 +66,7 @@ BOOST_AUTO_TEST_CASE(IfSearchPathCannotFindSomethingThatNotExists)
 {
 	Environment env;
 	std::string programName = "This is the program with long name. It can't exist. We are on a mission from God!";
-	BOOST_CHECK_THROW(env.searchPath(programName), std::exception);
+	BOOST_CHECK_EQUAL(env.searchPath(programName), "");
 }
 
 

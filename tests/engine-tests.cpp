@@ -53,12 +53,9 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		dirString = Engine::currentDir.substr(0, Engine::currentDir.size() - 17);
 		dirString += "tests/";
 
-		std::cout << Engine::env.getCurrentDir() << std::endl;
-
 		Command cmd;
 		cmd.command = "cd";
 
-		//TODO: ../
 		cmd.args.push_back(dirString);
 
 		std::vector<Command> commandLine({cmd});
@@ -74,8 +71,6 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		cmd.args.push_back(Engine::currentDir + "/non-existing-dir");
 		std::vector<Command> commandLine({cmd});
 
-		std::cout << Engine::env.getCurrentDir() << std::endl;
-
 		BOOST_CHECK_THROW( Engine::engine.executeCommandLine(commandLine), std::exception );
 	}
 
@@ -86,8 +81,6 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		cmd.args.push_back("non-existing-dir");
 		std::vector<Command> commandLine({cmd});
 
-		std::cout << Engine::env.getCurrentDir() << std::endl;
-
 		BOOST_CHECK_THROW( Engine::engine.executeCommandLine(commandLine), std::exception );
 	}
 
@@ -97,8 +90,7 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		cmd.command = "cd";
 		cmd.args.push_back("./non-existing-command");
 		std::vector<Command> commandLine({cmd});
-
-		std::cout << Engine::env.getCurrentDir() << std::endl;
+		
 
 		BOOST_CHECK_THROW( Engine::engine.executeCommandLine(commandLine), std::exception );
 	}
@@ -141,7 +133,6 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 
 		Engine::engine.executeCommandLine(commandLine);
 
-		std::cout << Engine::env.getCurrentDir() << std::endl;
 		BOOST_CHECK_EQUAL( Engine::env.getReturnCode(), 0 );
 
 		std::ifstream in;
@@ -178,7 +169,6 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 
 		Engine::engine.executeCommandLine(commandLine);
 
-		std::cout << Engine::env.getCurrentDir() << std::endl;
 		BOOST_CHECK_EQUAL( Engine::env.getReturnCode(), 0 );
 
 		std::ifstream in;
@@ -229,18 +219,6 @@ BOOST_AUTO_TEST_CASE(change_dir_to_current)
 		BOOST_CHECK_THROW(Engine::engine.executeCommandLine(commandLine), std::exception);
 	}
 
-
-	BOOST_AUTO_TEST_CASE(wrong_redirection_test)
-	{
-		std::vector<Command> commandLine;
-
-		Command cmd;
-		cmd.command = "ls";
-		cmd.redirections.push_back(Command::Redirection(0, false, false, "abc.txt"));
-		commandLine.push_back(cmd);
-
-		BOOST_CHECK_THROW(Engine::engine.executeCommandLine(commandLine), std::exception);
-	}
 
 	BOOST_AUTO_TEST_CASE(input_redirection_test)
 	{

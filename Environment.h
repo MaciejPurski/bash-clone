@@ -163,13 +163,6 @@ private:
 
 	std::string getPathPiece(std::string path);
 
-	/**
-	 * @brief Counts the number of global variables in variablesMap.
-	 * @return number of global variables
-	 */
-
-
-	int countGlobalVariables() const;
 
 	/**
 	 * @brief Function cuts the first from left dir path. Name must(!) start with "/"!
@@ -299,6 +292,13 @@ public:
 	 */
 
 	void setReturnCode(int returnCode);
+
+	/**
+	 * @brief Counts the number of global variables in variablesMap.
+ 	* @return number of global variables
+	 */
+	int countGlobalVariables() const;
+
 };
 
 

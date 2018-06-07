@@ -1,12 +1,8 @@
 a==abcd
 USER=maciej
+PWD=/home/maciej/studia/UXP/bash-clone/tests/
+HOME=/home/maciej
 iej
-a==abcd
-USER=maciej
-USER=maciej
-a==abcd
-USER=maciej
-USER=maciej
 a==abcd
 USER=maciej
 USER=maciej
