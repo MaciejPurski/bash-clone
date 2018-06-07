@@ -6,7 +6,7 @@
 #include <cstring>
 
 /**
- * Class representing a command.
+ * @brief Class representing a command.
  */
 class Command {
 public:

@@ -8,7 +8,7 @@
 #include <list>
 
 /**
- * @class Engine
+ * @class ExecutionEngine
  * @brief Bash execution engine class
  *
  * The class is responsible for preparing commands to be ran by
